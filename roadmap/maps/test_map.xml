@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node id="0" x="10" y="0" theta="0"/>
+<node id="1" x="20" y="0" theta="0"/>
+<node id="2" x="30" y="0" theta="0"/>
+<node id="3" x="40" y="0" theta="0"/>
+<node id="4" x="50" y="10" theta="0"/>
+
+<node id="5" x="20" y="-20" theta="0"/>
+<node id="6" x="20" y="-10" theta="0"/>
+<node id="7" x="20" y="0" theta="0"/>
+<node id="8" x="20" y="10" theta="0"/>
+<node id="9" x="40" y="20" theta="0"/>
+<!-- 
+uint8 LANECENTER_FREEWAY=1
+uint8 LANECENTER_SURFACESTREET=2
+uint8 LANECENTER_BIKELANE=3
+uint8 ROADLINE_BROKENSINGLEWHITE=6
+uint8 ROADLINE_SOLIDSINGLEWHITE=7
+uint8 ROADLINE_SOLIDDOUBLEWHITE=8
+uint8 ROADLINE_BROKENSINGLEYELLOW=9
+uint8 ROADLINE_BROKENDOUBLEYELLOW=10
+uint8 ROADLINE_SOLIDSINGLEYELLOW=11
+uint8 ROADLINE_SOLIDDOUBLEYELLOW=12
+uint8 ROADLINE_PASSINGDOUBLEYELLOW=13
+uint8 ROADEDGEBOUNDARY=15
+uint8 ROADEDGEMEDIAN=16
+uint8 STOPSIGN=17
+uint8 CROSSWALK=18
+uint8 SPEEDBUMP=19 
+-->
+<way id="0">
+  <nd ref="0"/>
+  <nd ref="1"/>
+  <nd ref="2"/>
+  <nd ref="3"/>
+  <nd ref="4"/>
+  <tag type="road" width="4.0"/>
+  <tag type="sidewalk" width="2.0"/>
+</way>
+
+<way id="0">
+  <nd ref="5"/>
+  <nd ref="6"/>
+  <nd ref="7"/>
+  <nd ref="8"/>
+  <nd ref="9"/>
+  <tag type="11"/>
+</way>

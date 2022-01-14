@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+
+    <rosparam command="load" file="$(find roadmap)/config/settings.yaml"/>
+    <node pkg="roadmap" type="roadmap_node" name="roadmap_node" cwd="node" respawn="false" output="screen"/>
+
+</launch>  
