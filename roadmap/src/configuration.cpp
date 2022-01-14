@@ -23,6 +23,8 @@ bool RoadmapConfig::initialize() //const std::string& node_handle_name
   retrieveParameter(nh, "minimum_waypoint_distance", minimum_waypoint_distance_);
   retrieveParameter(nh, "clothoid_point_per_xm", clothoid_point_per_xm_);
 
+  retrieveParameter(nh, "scale", scale_);
+
   success_ = true;
 
   if (debug_output_)

@@ -37,7 +37,6 @@ private:
     void ReadXML(const std::string &file);
 
     // XML Read functions
-    void ReadNodes(const rapidxml::xml_document<> &doc);
     void ReadWays(const rapidxml::xml_document<> &doc);
 };
 

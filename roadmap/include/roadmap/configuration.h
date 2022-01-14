@@ -34,6 +34,9 @@ public:
   double minimum_waypoint_distance_;
   double clothoid_point_per_xm_;
 
+  // Visual settings
+  double scale_;
+
   bool success_;
 
 private:

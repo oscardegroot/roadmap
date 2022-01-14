@@ -59,9 +59,9 @@ private:
     std::unique_ptr<ROSMarkerPublisher> input_map_markers_;
     std::unique_ptr<ROSMarkerPublisher> output_map_markers_;
 
-    void FitSplineOnWay(Way &way, std::map<int, Node> &nodes);
+    void FitSplineOnLane(Lane &lane);
 
-    void FitSplineOnWaypoints(const std::vector<Waypoint> &waypoints, std::vector<Waypoint> &waypoints_out, Way &way);
+    void FitSplineOnWaypoints(const std::vector<Waypoint> &waypoints, std::vector<Waypoint> &waypoints_out, Lane &lane);
 
     /**
      * @brief Convert a set of input waypoints to the format for fitting the cubic spline
@@ -86,73 +86,11 @@ private:
     /**
      * @brief Fit a cubic spline over a set of waypoints (x, y, s)
      * 
-     * @param way The way object that contains the spline
+     * @param lane The lane object that contains the spline
      * @param waypoints_out waypoints sampled over the fitted spline
      */
-    void FitCubicSpline(Way &way, std::vector<Waypoint> &waypoints_out);
+    void FitCubicSpline(Lane &lane, std::vector<Waypoint> &waypoints_out);
 
-    void VisualizeWaySpline(const Way &way, std::map<int, Node> &nodes);
-
-    // void ConstructReferencePathWithClothoid(const std::vector<double> &x, const std::vector<double> &y, const std::vector<double> &theta);
-    // void ConstructReferencePathWithoutClothoid(const std::vector<double> &x, const std::vector<double> &y, const std::vector<double> &theta);
-
-    // predictive_configuration *config_;
-
-    // ros::Publisher spline_pub_, road_pub_, marker_pub_;
-
-    // std::unique_ptr<ROSMarkerPublisher> ros_markers_refpath;
-    // std::unique_ptr<ROSMarkerPublisher> ros_markers_splineindex;
-    // std::unique_ptr<ROSMarkerPublisher> ros_markers_linearboundaries;
-    // std::unique_ptr<ROSMarkerPublisher> ros_markers_road_limits;
-
-    // void ReadReferencePath();
-    // void ConstructReferencePath(const std::vector<double> &x, const std::vector<double> &y, const std::vector<double> &theta); // Selects which method to use
-
-    // int RecursiveClosestPointSearch(BaseModel *solver_interface_ptr, unsigned int cur_traj_i, double &s_guess, double window, int n_tries);
-
-    // PUBLIC OLD
-
-    // // Current spline index
-    // unsigned int spline_index_;
-    // unsigned int waypoints_size_;
-
-    // // Waypoints x, y, theta
-    // std::vector<double> x_, y_, theta_;
-
-    // // Output splines
-    // tk::spline ref_path_x_, ref_path_y_;
-
-    // // Spline s, x, y
-    // std::vector<double> ss_, xx_, yy_;
-
-    // double dist_spline_pts_;
-
-    // nav_msgs::Path spline_msg_;
-
-    // void Init(ros::NodeHandle &nh, predictive_configuration *config);
-    // void InitPath();
-    // void InitPath(const std::vector<double> &x, const std::vector<double> &y, const std::vector<double> &theta);
-
-    // void SetParameters(BaseModel *solver_interface, int N_iter, int &param_idx); // Set solver parameters
-    // void UpdateClosestPoint(BaseModel *solver_interface_ptr, double &s_guess, double window, int n_tries);
-
-    // void InitializeClosestPoint(BaseModel *solver_interface_ptr);
-
-    // bool EndOfCurrentSpline(double index);
-
-    // void UpdateWaypoint(BaseModel *solver_interface_ptr);
-
-    // bool ReachedEnd();
-
-    // void ConstructRoadConstraints(BaseModel *solver_interface, std::vector<lmpcc_msgs::halfspace_array> &halfspaces_out);
-
-    // void PublishReferencePath();
-    // void PublishSpline();
-    // void PublishCurrentSplineIndex();
-
-    // void PublishRoadBoundaries(BaseModel *solver_interface_ptr);
-    // void PublishLinearRoadBoundaries(BaseModel *solver_interface_ptr, const lmpcc_msgs::halfspace_array &halfspaces_out);
-    // void VisualizeRoadLocally();
-    // void VisualizeRoad();
+    void VisualizeLaneSpline(const Lane &lane, std::map<int, Node> &nodes);
 };
 #endif
