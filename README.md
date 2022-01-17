@@ -15,3 +15,5 @@ The xml reader depends on http://wiki.ros.org/asr_rapidxml.
 
 See `settings.yaml` for high level settings
 Currenly, the reader supports xml and yaml documents. See `maps/test_map.xml`, `maps/test_map.yaml` for example formats.
+
+**Note:** Support for the yaml files is for backwards compatibility, but the xml format should be prefered.
