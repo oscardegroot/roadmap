@@ -42,6 +42,9 @@ public:
   // Visual settings
   double scale_;
 
+  // Topics
+  std::string external_waypoint_topic_;
+
   bool success_;
 
 public:

@@ -8,10 +8,13 @@
 #include <stdlib.h> /* atoi */
 #include <map>
 
+#include <nav_msgs/Path.h>
+
 #include "rapidxml_utils.hpp"
 
 #include "types.h"
 #include "configuration.h"
+#include "lmpcc_tools/helpers.h"
 
 class Reader
 {
@@ -24,6 +27,7 @@ public:
     Reader(RoadmapConfig *config)
         : config_(config)
     {
+        from_callback_ = false;
     }
 
 public:
@@ -51,9 +55,18 @@ public:
      */
     Map &GetMap() { return map_; };
 
+    /**
+     * @brief Callback for external waypoints instead of reading a file
+     * 
+     * @param msg the reference as a nav_msgs::Path
+     */
+    void WaypointCallback(const nav_msgs::Path &msg);
+
 private:
     Map map_;               /** The read map */
     RoadmapConfig *config_; /** Parameters */
+
+    bool from_callback_; /** Are we reading a callback instead of a file? */
 
     /**
      * @brief Read an XML file with map data

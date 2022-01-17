@@ -8,7 +8,11 @@ void Reader::Read()
 
 void Reader::Read(const std::string &file_name)
 {
+    if (from_callback_)
+        return;
+
     ROADMAP_INFO("Reading map file");
+    map_.Clear();
 
     // If the path does not contain the package, add it
     std::string map_file;
@@ -36,8 +40,6 @@ void Reader::ReadXML(const std::string &file)
     rapidxml::xml_document<> doc;
     doc.parse<0>(xmlFile.data());
 
-    map_.Clear();
-
     ReadWays(doc);
 
     ROADMAP_INFO("XML Read.");
@@ -46,11 +48,10 @@ void Reader::ReadXML(const std::string &file)
 void Reader::ReadYAML(const std::string &file)
 {
     // std::cout << std::string("rosparam load ") + file << std::endl;
-    int result = system(std::string("rosparam load " + file).c_str());
-    assert(result == 0);
+    if (system(std::string("rosparam load " + file).c_str()))
+        return;
 
     // Assume one Way object as reference path
-    map_.ways.clear();
 
     ros::NodeHandle nh;
 
@@ -77,7 +78,6 @@ void Reader::ReadYAML(const std::string &file)
 void Reader::ReadWays(const rapidxml::xml_document<> &doc)
 {
     // Ways connect the nodes
-    map_.ways.clear();
     int id = 0;
     for (rapidxml::xml_node<> *way = doc.first_node("way"); way; way = way->next_sibling("way"))
     {
@@ -115,4 +115,32 @@ void Reader::ReadWays(const rapidxml::xml_document<> &doc)
         //         std::cout << "\tNode " << lane.id << ": " << node.x << ", " << node.y << std::endl;
         // }
     }
+}
+
+void Reader::WaypointCallback(const nav_msgs::Path &msg)
+{
+    from_callback_ = true;
+
+    // if (config_->activate_debug_output_)
+    ROADMAP_INFO("Received " << std::floor(0.5 * msg.poses.size()) << " Waypoints");
+
+    // Assume one Way object as reference path
+    map_.Clear();
+
+    // Create a way object
+    Way new_way;
+    for (size_t i = 0; i < msg.poses.size(); i += 2)
+    {
+        new_way.AddNode(Node(msg.poses[i].pose.position.x,
+                             msg.poses[i].pose.position.y,
+                             Helpers::quaternionToAngle(msg.poses[i].pose)));
+    }
+
+    int id = 0;
+    // Add a regular road and sidewalk by default
+    new_way.AddLane("road", 4.0, true, id);
+    new_way.AddLane("sidewalk", 2.0, true, id);
+    map_.ways.push_back(new_way);
+
+    ROADMAP_INFO("Waypoints Saved.");
 }

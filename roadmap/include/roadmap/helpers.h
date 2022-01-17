@@ -1,5 +1,5 @@
-#ifndef HELPERS_H
-#define HELPERS_H
+#ifndef __HELPERS_H__
+#define __HELPERS_H__
 
 /** Logging Macros */
 #define ROADMAP_INFO(msg)                      \
@@ -33,4 +33,4 @@
 #define ROADMAP_INFO_ALWAYS(msg) ROS_INFO_STREAM("[Roadmap]: " << msg)
 #define ROADMAP_WARN_ALWAYS(msg) ROS_WARN_STREAM("[Roadmap]: " << msg)
 
-#endif
+#endif // __HELPERS_H__

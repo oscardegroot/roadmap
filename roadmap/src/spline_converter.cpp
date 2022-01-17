@@ -13,6 +13,12 @@ void SplineConverter::Initialize(ros::NodeHandle &nh, RoadmapConfig *config)
 
 void SplineConverter::ConvertMap(Map &map)
 {
+    if (map.ways.size() == 0)
+    {
+        ROADMAP_WARN("Tried to convert an empty map (returning)")
+        return;
+    }
+
     ROADMAP_INFO("Fitting splines");
     VisualizeMap(map);
 

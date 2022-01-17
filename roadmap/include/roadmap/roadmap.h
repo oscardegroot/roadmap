@@ -31,7 +31,8 @@ private:
     SplineConverter spline_converter_; /** Spline convertion class */
     std::unique_ptr<Reader> reader_;   /** File reader class */
 
-    ros::Publisher map_pub_; /** Publisher for road polyline output */
+    ros::Subscriber waypoints_sub_; /** Subscriber for external waypoints */
+    ros::Publisher map_pub_;        /** Publisher for road polyline output */
 
     ros::Timer timer_;
 

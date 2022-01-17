@@ -1,14 +1,18 @@
-debug_output: false
-# map_file_name: 'maps/test_map.xml'
-map_file_name: 'maps/test_map.yaml'
-update_frequency: 1
+roadmap:
+  debug_output: true
+  update_frequency: 1
+  # map_file_name: 'maps/test_map.xml'
+  map_file_name: 'maps/test_map.yaml'
 
-fit_clothoid: true  # Fit a clothoid before fitting cubic splines?
+  # Spline settings
+  spline:
+    fit_clothoid: true  # Fit a clothoid before fitting cubic splines?
+    minimum_waypoint_distance: 2.0  # Ignore waypoints closer than this distance together
+    spline_sample_distance: 1.0  # distance between sampled waypoints on the spline
+    clothoid_point_per_xm: 1
 
-# Spline settings
-minimum_waypoint_distance: 2.0  # Ignore waypoints closer than this distance together
-spline_sample_distance: 1.0  # distance between sampled waypoints on the spline
-clothoid_point_per_xm: 1
-
-# Visual settings
-scale: 1.0
+  # Visual settings
+  scale: 1.0
+  
+  # Topics
+  external_waypoint_topic: '/carla/ego_vehicle/waypoints'
