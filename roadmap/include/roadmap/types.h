@@ -6,6 +6,9 @@
 
 #include "spline.h"
 
+/**
+ * @brief Struct describing a waypoint node (x, y, theta)
+ */
 struct Node
 {
 
@@ -19,16 +22,28 @@ struct Node
     }
 };
 
+/**
+ * @brief Struct describing a lane
+ * 
+ */
 struct Lane
 {
-    int id, type;
-    std::vector<Node> nodes;
+    int id, type;            /** ID and the type of lane as int */
+    std::vector<Node> nodes; /** Nodes that construct this lane */
 
     // Variables after spline fitting
-    bool spline_fit;
-    double length;
-    tk::spline spline_x, spline_y; // Cubic spline objects
+    bool spline_fit;               /** Has a spline been fitted over this lane? */
+    double length;                 /** Length of the lane */
+    tk::spline spline_x, spline_y; /** Cubic spline objects */
 
+    /**
+     * @brief Construct a new Lane object
+     * 
+     * @param _nodes nodes of the centerlane
+     * @param offset offset with respect to the centerlane for this lane
+     * @param _type type of lane (see road_msgs/RoadPolyline)
+     * @param _id current ID to add this lane on (and is increased after usage)
+     */
     Lane(const std::vector<Node> &_nodes, double offset, int _type, int &_id)
         : type(_type)
     {
@@ -48,7 +63,9 @@ struct Lane
         }
     }
 
-    // Copies for now
+    /**
+     * @brief Aassign a spline to this lane
+    */
     void AssignSpline(const tk::spline &_spline_x, const tk::spline &_spline_y)
     {
         spline_x = _spline_x;
@@ -57,11 +74,15 @@ struct Lane
     }
 };
 
+/**
+ * @brief A way struct that may contain multiple lanes (e.g., road, sidewalk, etc.)
+ * 
+ */
 struct Way
 {
-    std::vector<Lane> lanes;
-    std::vector<Node> nodes;
-    double plus_offset, minus_offset;
+    std::vector<Lane> lanes;          /** Lanes on this way */
+    std::vector<Node> nodes;          /** Nodes defining the center lane */
+    double plus_offset, minus_offset; /** Current aggregatied offset in lane construction */
 
     Way()
     {
@@ -69,13 +90,25 @@ struct Way
         minus_offset = 0.;
     }
 
+    /**
+     * @brief Add a node to the center line of this way
+     * 
+     * @param node the node to add
+     */
     void AddNode(const Node &node)
     {
         nodes.emplace_back(node);
     }
 
-    // Add a road by copying the current data and offsetting it
-    // Can only be called before the spline is fit!
+    /**
+     * @brief Add a road by copying the current data and offsetting it.
+     * Can only be called before the spline is fit!
+     * 
+     * @param _type type of lane to add
+     * @param width width of the lane
+     * @param two_way is it a two way lane?
+     * @param id ID to start at
+     */
     void AddLane(const std::string &_type, double width, bool two_way, int &id)
     {
         // The first lane we add needs to offset at the end, the rest at the start
@@ -135,22 +168,34 @@ struct Way
     }
 };
 
+/**
+ * @brief Struct to define the map.
+ * 
+ * Just contains a vector of ways for now
+ * 
+ */
 struct Map
 {
-    std::map<int, Node> nodes;
     std::vector<Way> ways;
 
     Map()
     {
     }
 
+    /**
+     * @brief Clear the map
+     * 
+     */
     void Clear()
     {
-        nodes.clear();
         ways.clear();
     }
 
-    // Load the data of this map object into a ros message
+    /**
+     * @brief Load the data of this map object into a ros message.
+     * 
+     * @param msg the output message
+     */
     void ToMsg(roadmap_msgs::RoadPolylineArray &msg)
     {
         msg.road_polylines.reserve(ways.size());

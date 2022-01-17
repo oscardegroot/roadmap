@@ -1,7 +1,7 @@
 #ifndef HELPERS_H
 #define HELPERS_H
 
-/** Logging Pragmas */
+/** Logging Macros */
 #define ROADMAP_INFO(msg)                      \
     if (config_->debug_output_)                \
     {                                          \

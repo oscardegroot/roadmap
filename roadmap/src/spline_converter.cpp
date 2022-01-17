@@ -58,14 +58,14 @@ void SplineConverter::VisualizeMap(Map &map, bool converted_map)
             }
 
             if (converted_map)
-                VisualizeLaneSpline(lane, map.nodes);
+                VisualizeLaneSpline(lane);
         }
     }
 
     markers->publish();
 }
 
-void SplineConverter::VisualizeLaneSpline(const Lane &lane, std::map<int, Node> &nodes)
+void SplineConverter::VisualizeLaneSpline(const Lane &lane)
 {
     ROSLine &line = output_map_markers_->getNewLine();
     line.setColor(0.5, 0.0, 0.0);

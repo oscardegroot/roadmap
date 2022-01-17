@@ -16,9 +16,11 @@
 #include "configuration.h"
 #include "types.h"
 #include "helpers.h"
-// #include <lmpcc_msgs/halfspace_array.h>
-// #include <lmpcc_msgs/halfspace.h>
 
+//Whens earching for the closest point on the path, this variable indicates the distance that the algorithm searches behind the current spline point.
+#define MAX_STEP_BACK_TOLERANCE 0.1f
+
+/** Struct for a waypoint with distance */
 struct Waypoint
 {
     double x, y, theta, s;
@@ -37,11 +39,12 @@ struct Waypoint
     }
 };
 
-//Whens earching for the closest point on the path, this variable indicates the distance that the algorithm searches behind the current spline point.
-#define MAX_STEP_BACK_TOLERANCE 0.1f
-
 class SplineConverter
 {
+
+    /**
+     * @brief Converts waypoints into spline representations
+     */
 
 public:
     SplineConverter(){};
@@ -49,16 +52,29 @@ public:
     void Initialize(ros::NodeHandle &nh, RoadmapConfig *config);
 
 public:
+    /** @brief Convert the waypoints of a map object into spline representations */
     void ConvertMap(Map &map);
 
+    /**
+     * @brief Visualize a map
+     * 
+     * @param map the map object
+     * @param converted_map is this an output map? Will change the topic and style of visualizations.
+     */
     void VisualizeMap(Map &map, bool converted_map = false);
 
 private:
-    RoadmapConfig *config_;
+    RoadmapConfig *config_; /** parameters */
 
+    /** Two classes for visualization of the map */
     std::unique_ptr<ROSMarkerPublisher> input_map_markers_;
     std::unique_ptr<ROSMarkerPublisher> output_map_markers_;
 
+    /**
+     * @brief Fit a spline to a particular lane
+     * @see types.h
+     * @param lane A lane (road, sidewalk, etc. )
+     */
     void FitSplineOnLane(Lane &lane);
 
     void FitSplineOnWaypoints(const std::vector<Waypoint> &waypoints, std::vector<Waypoint> &waypoints_out, Lane &lane);
@@ -91,6 +107,11 @@ private:
      */
     void FitCubicSpline(Lane &lane, std::vector<Waypoint> &waypoints_out);
 
-    void VisualizeLaneSpline(const Lane &lane, std::map<int, Node> &nodes);
+    /**
+     * @brief Visualize the spline fitted over a lane
+     * 
+     * @param lane the lane to visualize
+     */
+    void VisualizeLaneSpline(const Lane &lane);
 };
 #endif

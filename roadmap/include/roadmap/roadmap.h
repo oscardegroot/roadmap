@@ -15,6 +15,10 @@
 class Roadmap
 {
 
+    /**
+     * @brief Main class for the roadmap node
+     * 
+     */
 public:
     Roadmap();
 
@@ -22,19 +26,19 @@ public:
 private:
     ros::NodeHandle nh_;
 
-    std::unique_ptr<RoadmapConfig> config_;
+    std::unique_ptr<RoadmapConfig> config_; /** Parameters */
 
-    SplineConverter spline_converter_;
-    std::unique_ptr<Reader> reader_; // Should have a "read" function
+    SplineConverter spline_converter_; /** Spline convertion class */
+    std::unique_ptr<Reader> reader_;   /** File reader class */
 
-    ros::Publisher map_pub_;
+    ros::Publisher map_pub_; /** Publisher for road polyline output */
 
     ros::Timer timer_;
 
+    /**
+     * @brief Function that reads the map, currently repeated on a frequency
+     */
     void Poll(const ros::TimerEvent &event);
-
-    // Debug
-    int i = 0;
 };
 
 #endif // __ROADMAP_H__
