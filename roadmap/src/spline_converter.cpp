@@ -53,10 +53,19 @@ void SplineConverter::VisualizeMap(Map &map, bool converted_map)
                 if (is_input_data || is_translated_input_data)
                 {
                     scale = is_input_data ? 0.75 * config_->scale_ : 0.5 * config_->scale_;
+
+                    if (!prev_node) // Color the first node black
+                    {
+                        cube.setColor(0, 0, 0);
+                        scale *= 1.5;
+                    }
+                    else
+                        cube.setColor((double)lane.type / (double)20);
                 }
                 else
                 {
                     scale = 0.2 * config_->scale_;
+                    cube.setColor((double)lane.type / (double)20);
 
                     if (prev_node)
                     {
@@ -73,17 +82,16 @@ void SplineConverter::VisualizeMap(Map &map, bool converted_map)
                             node.y,
                             0.1));
                     }
-
-                    prev_node = &node;
                 }
 
                 cube.setScale(scale, scale, scale);
 
-                cube.setColor((double)lane.type / (double)20);
                 cube.addPointMarker(Eigen::Vector3d(
                     node.x,
                     node.y,
                     0.1));
+
+                prev_node = &node;
             }
 
             if (converted_map)
