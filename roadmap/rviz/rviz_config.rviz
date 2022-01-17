@@ -68,6 +68,14 @@ Visualization Manager:
         "": true
       Queue Size: 100
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /roadmap/output_map_arrows
+      Name: Output Map Arrows
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 238; 238; 236
@@ -104,17 +112,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 22.221704483032227
-        Y: 1.6558912992477417
-        Z: 5.848776817321777
+        X: 6.224562168121338
+        Y: -0.013138458132743835
+        Z: 11.88878345489502
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.4647964239120483
+      Pitch: 1.0497969388961792
       Target Frame: <Fixed Frame>
-      Yaw: 5.838564872741699
+      Yaw: 5.853564262390137
     Saved: ~
 Window Geometry:
   Displays:

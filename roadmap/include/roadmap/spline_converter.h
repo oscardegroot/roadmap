@@ -69,6 +69,7 @@ private:
     /** Two classes for visualization of the map */
     std::unique_ptr<ROSMarkerPublisher> input_map_markers_;
     std::unique_ptr<ROSMarkerPublisher> output_map_markers_;
+    std::unique_ptr<ROSMarkerPublisher> arrow_markers_;
 
     /**
      * @brief Fit a spline to a particular lane

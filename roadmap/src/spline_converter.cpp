@@ -4,6 +4,7 @@ void SplineConverter::Initialize(ros::NodeHandle &nh, RoadmapConfig *config)
 {
     input_map_markers_.reset(new ROSMarkerPublisher(nh, "roadmap/input_map", "map", 500));
     output_map_markers_.reset(new ROSMarkerPublisher(nh, "roadmap/output_map", "map", 2000));
+    arrow_markers_.reset(new ROSMarkerPublisher(nh, "roadmap/output_map_arrows", "map", 2000));
 
     config_ = config;
 
@@ -32,7 +33,8 @@ void SplineConverter::VisualizeMap(Map &map, bool converted_map)
     ROADMAP_INFO("Visualizing the map");
 
     std::unique_ptr<ROSMarkerPublisher> &markers = converted_map ? output_map_markers_ : input_map_markers_;
-    ROSPointMarker &cube = markers->getNewPointMarker("Cube");
+    ROSPointMarker &cube = markers->getNewPointMarker("CUBE");
+    ROSPointMarker &arrow = arrow_markers_->getNewPointMarker("ARROW");
 
     double scale;
 
@@ -41,12 +43,39 @@ void SplineConverter::VisualizeMap(Map &map, bool converted_map)
         for (size_t i = 0; i < way.lanes.size(); i++)
         {
             const Lane &lane = way.lanes[i];
+            const Node *prev_node = nullptr;
             for (const Node &node : lane.nodes)
             {
-                if (!converted_map && i == 0)
-                    scale = 0.75 * config_->scale_;
+                bool is_input_data = !converted_map && i == 0;
+                bool is_translated_input_data = (!is_input_data) && !converted_map;
+                // bool is_fitted_data = (!is_input_data) && (!is_translated_input_data);
+
+                if (is_input_data || is_translated_input_data)
+                {
+                    scale = is_input_data ? 0.75 * config_->scale_ : 0.5 * config_->scale_;
+                }
                 else
-                    scale = converted_map ? 0.2 * config_->scale_ : 0.5 * config_->scale_;
+                {
+                    scale = 0.2 * config_->scale_;
+
+                    if (prev_node)
+                    {
+
+                        // For fitted points we plot arrows to indicate the direction
+                        arrow.setScale(3 * scale, scale);
+
+                        arrow.setColor((double)lane.type / (double)20);
+
+                        double orientation = std::atan2(node.y - prev_node->y, node.x - prev_node->x);
+                        arrow.setOrientation(orientation);
+                        arrow.addPointMarker(Eigen::Vector3d(
+                            node.x,
+                            node.y,
+                            0.1));
+                    }
+
+                    prev_node = &node;
+                }
 
                 cube.setScale(scale, scale, scale);
 
@@ -63,6 +92,7 @@ void SplineConverter::VisualizeMap(Map &map, bool converted_map)
     }
 
     markers->publish();
+    arrow_markers_->publish();
 }
 
 void SplineConverter::VisualizeLaneSpline(const Lane &lane)
