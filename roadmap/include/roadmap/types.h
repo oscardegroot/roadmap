@@ -89,10 +89,23 @@ struct Way
 
         if (!_type.compare("road"))
         {
-            lanes.emplace_back(nodes, plus_offset, roadmap_msgs::RoadPolyline::LANECENTER_FREEWAY, id);
+            if (two_way)
+            {
+                lanes.emplace_back(nodes, plus_offset + width / 2., roadmap_msgs::RoadPolyline::LANECENTER_FREEWAY, id);
+                lanes.emplace_back(nodes, minus_offset - width / 2., roadmap_msgs::RoadPolyline::LANECENTER_FREEWAY, id);
 
-            lanes.emplace_back(nodes, minus_offset - width / 2., roadmap_msgs::RoadPolyline::ROADEDGEBOUNDARY, id);
-            lanes.emplace_back(nodes, plus_offset + width / 2., roadmap_msgs::RoadPolyline::ROADEDGEBOUNDARY, id);
+                lanes.emplace_back(nodes, plus_offset, roadmap_msgs::RoadPolyline::ROADLINE_BROKENSINGLEWHITE, id);
+
+                lanes.emplace_back(nodes, minus_offset - width, roadmap_msgs::RoadPolyline::ROADEDGEBOUNDARY, id);
+                lanes.emplace_back(nodes, plus_offset + width, roadmap_msgs::RoadPolyline::ROADEDGEBOUNDARY, id);
+            }
+            else
+            {
+                lanes.emplace_back(nodes, plus_offset, roadmap_msgs::RoadPolyline::LANECENTER_FREEWAY, id);
+
+                lanes.emplace_back(nodes, minus_offset - width / 2., roadmap_msgs::RoadPolyline::ROADEDGEBOUNDARY, id);
+                lanes.emplace_back(nodes, plus_offset + width / 2., roadmap_msgs::RoadPolyline::ROADEDGEBOUNDARY, id);
+            }
         }
         else if (!_type.compare("crosswalk"))
         {
@@ -105,10 +118,19 @@ struct Way
                 lanes.emplace_back(nodes, minus_offset, roadmap_msgs::RoadPolyline::LANECENTER_SURFACESTREET, id);
         }
 
+        // For the first added lane
         if (plus_offset == 0.)
         {
-            plus_offset += width / 2.;
-            minus_offset -= width / 2.;
+            if (two_way)
+            {
+                plus_offset += width;
+                minus_offset -= width;
+            }
+            else
+            {
+                plus_offset += width / 2.;
+                minus_offset -= width / 2.;
+            }
         }
     }
 };

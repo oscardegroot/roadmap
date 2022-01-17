@@ -26,12 +26,12 @@ uint8 SPEEDBUMP=19
   <nd x="50" y="10" theta="1.5708"/> 
   <nd x="50" y="30" theta="1.5708"/>
   <nd x="50" y="100" theta="1.5708"/>
-  <lane type="road" width="4.0" two_way="0"/>
+  <lane type="road" width="4.0" two_way="1"/>
   <lane type="sidewalk" width="2.0" two_way="1"/>
 </way>
 
 <way>
-  <nd x="47" y="30" theta="0."/>
-  <nd x="53" y="30" theta="0."/>
+  <nd x="44" y="30" theta="0."/>
+  <nd x="58" y="30" theta="0."/>
   <lane type="crosswalk" width="2.0" two_way="0"/>
 </way>

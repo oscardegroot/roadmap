@@ -2,17 +2,17 @@
 
 void SplineConverter::Initialize(ros::NodeHandle &nh, RoadmapConfig *config)
 {
-    input_map_markers_.reset(new ROSMarkerPublisher(nh, "roadmap/input_map", "map", 100));
-    output_map_markers_.reset(new ROSMarkerPublisher(nh, "roadmap/output_map", "map", 500));
+    input_map_markers_.reset(new ROSMarkerPublisher(nh, "roadmap/input_map", "map", 500));
+    output_map_markers_.reset(new ROSMarkerPublisher(nh, "roadmap/output_map", "map", 2000));
 
     config_ = config;
 
-    ROS_WARN("Initialized!");
+    ROADMAP_WARN("Initialized Spline Converter");
 }
 
 void SplineConverter::ConvertMap(Map &map)
 {
-    std::cout << "[Spline Converter]: Fitting splines" << std::endl;
+    ROADMAP_INFO("Fitting splines");
     VisualizeMap(map);
 
     // First fit splines on all defined ways
@@ -29,7 +29,7 @@ void SplineConverter::ConvertMap(Map &map)
 
 void SplineConverter::VisualizeMap(Map &map, bool converted_map)
 {
-    std::cout << "[Spline Converter]: Visualizing the map" << std::endl;
+    ROADMAP_INFO("Visualizing the map");
 
     std::unique_ptr<ROSMarkerPublisher> &markers = converted_map ? output_map_markers_ : input_map_markers_;
     ROSPointMarker &cube = markers->getNewPointMarker("Cube");
@@ -192,6 +192,7 @@ void SplineConverter::FitClothoid(const std::vector<Waypoint> &waypoints, std::v
 void SplineConverter::ConvertWaypointsToVectors(const std::vector<Waypoint> &waypoints, std::vector<double> &x, std::vector<double> &y, std::vector<double> &s)
 {
     ROADMAP_INFO("Generating spline without clothoid interpolation");
+    assert(waypoints.size() > 1);
 
     double length = 0;
     double L;
@@ -215,6 +216,20 @@ void SplineConverter::ConvertWaypointsToVectors(const std::vector<Waypoint> &way
             y.push_back(waypoints[i].y);
             s.push_back(length);
         }
+    }
+
+    // In the case of just 2 waypoints, we need to add an additional waypoint to have a spline representation
+    if (x.size() == 2)
+    {
+        // Copy into the 2nd waypoint
+        x.push_back(x.back());
+        y.push_back(y.back());
+        s.push_back(s.back());
+
+        // Average for the middle waypoint
+        x[1] = (x[0] + x[2]) / 2.;
+        y[1] = (y[0] + y[2]) / 2.;
+        s[1] = (s[0] + s[2]) / 2.;
     }
 }
 
@@ -248,5 +263,5 @@ void SplineConverter::FitCubicSpline(Lane &lane, std::vector<Waypoint> &waypoint
             lane.spline_x.m_x_.back());
     }
 
-    ROADMAP_INFO("Spline generated");
+    ROADMAP_INFO("Cubic Spline Fitted");
 }

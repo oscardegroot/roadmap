@@ -2,6 +2,8 @@
 #define __ROADMAP_H__
 
 #include <ros/ros.h>
+#include <ros/console.h>
+#include <string>
 
 #include "roadmap_msgs/RoadPolylineArray.h"
 #include "roadmap_msgs/RoadPolyline.h"
@@ -18,10 +20,12 @@ public:
 
 public:
 private:
-    RoadmapConfig config_;
+    ros::NodeHandle nh_;
+
+    std::unique_ptr<RoadmapConfig> config_;
 
     SplineConverter spline_converter_;
-    Reader reader_; // Should have a "read" function
+    std::unique_ptr<Reader> reader_; // Should have a "read" function
 
     ros::Publisher map_pub_;
 

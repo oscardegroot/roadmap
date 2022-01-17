@@ -11,7 +11,6 @@
 #define ROADMAP_WARN(msg)                      \
     if (config_->debug_output_)                \
     {                                          \
-        std::cout << "is running\n";           \
         ROS_WARN_STREAM("[Roadmap]: " << msg); \
     }
 

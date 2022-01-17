@@ -37,10 +37,9 @@ include_directories(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES roadmap
-#  CATKIN_DEPENDS geometry_msgs roscpp std_msgs
-#  DEPENDS system_lib
+  CATKIN_DEPENDS geometry_msgs roslib roscpp std_msgs asr_rapidxml roadmap_msgs lmpcc_tools
+  INCLUDE_DIRS include include/${PROJECT_NAME} include/spline
+  LIBRARIES roadmap
 )
 
 ###########
@@ -50,7 +49,9 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+	include
+	include/roadmap
+	include/spline
   ${catkin_INCLUDE_DIRS}
 )
 

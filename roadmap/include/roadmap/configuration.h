@@ -25,11 +25,16 @@ public:
      */
   bool initialize();
 
-  // Parameters
+  // High-level Parameters
   bool debug_output_;
-  bool fit_clothoid_;
+
+  std::string map_file_name_;
+
+  double update_frequency_;
 
   // Spline settings
+  bool fit_clothoid_;
+
   double spline_sample_distance_;
   double minimum_waypoint_distance_;
   double clothoid_point_per_xm_;
@@ -39,11 +44,10 @@ public:
 
   bool success_;
 
-private:
+public:
   /* Retrieve paramater, if it doesn't exist return false */
   template <class T>
-  bool
-  retrieveParameter(const ros::NodeHandle &nh, const std::string &name, T &value)
+  static bool retrieveParameter(const ros::NodeHandle &nh, const std::string &name, T &value)
   {
 
     if (!nh.getParam(name, value))
@@ -59,7 +63,7 @@ private:
 
   /* Retrieve parameter, if it doesn't exist use the default */
   template <class T>
-  void retrieveParameter(const ros::NodeHandle &nh, const std::string &name, T &value, const T &default_value)
+  static void retrieveParameter(const ros::NodeHandle &nh, const std::string &name, T &value, const T &default_value)
   {
 
     if (!retrieveParameter(nh, name, value))

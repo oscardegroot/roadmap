@@ -1,10 +1,33 @@
 #include "reader.h"
 
-Reader::Reader()
+void Reader::Read()
 {
-    std::string filename = ros::package::getPath("roadmap") + "/maps/test_map.xml";
+    std::string map_file = ros::package::getPath("roadmap") + "/" + config_->map_file_name_;
+    Read(map_file);
+}
 
-    ReadXML(filename);
+void Reader::Read(const std::string &file_name)
+{
+    ROADMAP_INFO("Reading map file");
+
+    // If the path does not contain the package, add it
+    std::string map_file;
+    if (file_name.find("//roadmap//") != std::string::npos)
+        map_file = ros::package::getPath("roadmap") + "/" + file_name;
+    else
+        map_file = file_name;
+
+    // Read the file with the correct file extension
+    if (map_file.substr(map_file.find_last_of(".") + 1) == "xml")
+        ReadXML(map_file);
+    else
+        ReadYAML(map_file);
+}
+
+void Reader::Read(const std::string &&file_name)
+{
+    std::string map_file = ros::package::getPath("roadmap") + "/" + file_name;
+    Read(map_file);
 }
 
 void Reader::ReadXML(const std::string &file)
@@ -17,7 +40,38 @@ void Reader::ReadXML(const std::string &file)
 
     ReadWays(doc);
 
-    ROS_INFO("[Roadmap]: XML Read.");
+    ROADMAP_INFO("XML Read.");
+}
+
+void Reader::ReadYAML(const std::string &file)
+{
+    // std::cout << std::string("rosparam load ") + file << std::endl;
+    int result = system(std::string("rosparam load " + file).c_str());
+    assert(result == 0);
+
+    // Assume one Way object as reference path
+    map_.ways.clear();
+
+    ros::NodeHandle nh;
+
+    std::vector<double> x, y, theta;
+    RoadmapConfig::retrieveParameter(nh, "global_path/x", x);
+    RoadmapConfig::retrieveParameter(nh, "global_path/y", y);
+    RoadmapConfig::retrieveParameter(nh, "global_path/theta", theta);
+    assert(x.size() == y.size());
+    assert(y.size() == theta.size());
+
+    // Create a way object
+    Way new_way;
+    for (size_t i = 0; i < x.size(); i++)
+        new_way.AddNode(Node(x[i], y[i], theta[i])); // Create nodes
+
+    int id = 0;
+    // Add a regular road and sidewalk by default
+    new_way.AddLane("road", 4.0, true, id);
+    new_way.AddLane("sidewalk", 2.0, true, id);
+    map_.ways.push_back(new_way);
+    ROADMAP_INFO("YAML Read.");
 }
 
 void Reader::ReadWays(const rapidxml::xml_document<> &doc)
@@ -39,10 +93,15 @@ void Reader::ReadWays(const rapidxml::xml_document<> &doc)
 
         for (rapidxml::xml_node<> *lane = way->first_node("lane"); lane; lane = lane->next_sibling("lane"))
         {
+            // Optional two way parameters (default = false)
+            bool two_way = false;
+            if (lane->first_attribute("two_way")->value())
+                two_way = bool(atoi(lane->first_attribute("two_way")->value()));
+
             // Create a lane for each lane tag
             new_way.AddLane(std::string(lane->first_attribute("type")->value()),
                             atof(lane->first_attribute("width")->value()),
-                            bool(atoi(lane->first_attribute("two_way")->value())),
+                            two_way,
                             id);
         }
 
