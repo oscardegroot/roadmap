@@ -23,6 +23,13 @@ public:
     Roadmap();
 
 public:
+    /**
+     * @brief Callback for external waypoints
+     * 
+     * @param msg the reference as a nav_msgs::Path
+     */
+    void WaypointCallback(const nav_msgs::Path &msg);
+
 private:
     ros::NodeHandle nh_;
 
@@ -35,6 +42,9 @@ private:
     ros::Publisher map_pub_;        /** Publisher for road polyline output */
     ros::Publisher reference_pub_;  /** Publisher for road polyline output */
 
+    roadmap_msgs::RoadPolylineArray road_msg_; // Setup the message
+    nav_msgs::Path ref_msg_;                   // Setup the message
+
     ros::Timer timer_;
 
     int runs_ = 0;
@@ -43,6 +53,16 @@ private:
      * @brief Function that reads the map, currently repeated on a frequency
      */
     void Poll(const ros::TimerEvent &event);
+
+    /**
+     * @brief Read the map from file and visualize the input
+     */
+    void ReadFromFile();
+
+    /**
+     * @brief Convert the map and create ros messages
+     */
+    void ConvertMap();
 };
 
 #endif // __ROADMAP_H__

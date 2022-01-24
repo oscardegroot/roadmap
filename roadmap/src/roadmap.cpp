@@ -9,7 +9,7 @@ Roadmap::Roadmap()
     reader_.reset(new Reader(config_.get()));
 
     // Subscribers
-    waypoints_sub_ = nh_.subscribe(config_->external_waypoint_topic_, 1, &Reader::WaypointCallback, reader_.get()); // Subscriber for waypoints (forwarded to the reader)
+    waypoints_sub_ = nh_.subscribe(config_->external_waypoint_topic_, 1, &Roadmap::WaypointCallback, this); // Subscriber for waypoints (forwarded to the reader)
 
     // Publishers
     map_pub_ = nh_.advertise<roadmap_msgs::RoadPolylineArray>("roadmap/polylines", 1);
@@ -18,30 +18,55 @@ Roadmap::Roadmap()
     // Then convert the read waypoints to splines
     spline_converter_.Initialize(nh_, config_.get());
 
+    ReadFromFile();
+
     timer_ = nh_.createTimer(ros::Duration(1.0 / config_->update_frequency_), &Roadmap::Poll, this);
 
     ROADMAP_WARN("Initialization completed");
 }
 
-// Need a better flow here...
+// Have two maps (input / output)
+void Roadmap::ReadFromFile()
+{
+    ROADMAP_INFO("Reading map from file")
+
+    reader_->Read();
+    ConvertMap();
+}
+
+void Roadmap::WaypointCallback(const nav_msgs::Path &msg)
+{
+    ROADMAP_INFO("Received waypoints")
+
+    reader_->WaypointCallback(msg);
+    ConvertMap();
+}
+
+void Roadmap::ConvertMap()
+{
+    spline_converter_.ConvertMap(reader_->GetMap());
+
+    road_msg_.road_polylines.clear();
+    ref_msg_.poses.clear();
+    reader_->GetMap().ToMsg(road_msg_); // Load map data into the message
+    reader_->GetMap().ToMsg(ref_msg_);  // Load reference path data into the message
+}
+
 void Roadmap::Poll(const ros::TimerEvent &event)
 {
     ROADMAP_INFO("====== START LOOP ======")
     runs_++;
     if (runs_ < 10)
     {
-        reader_->Read();
-        spline_converter_.ConvertMap(reader_->GetMap());
-
-        roadmap_msgs::RoadPolylineArray msg; // Setup the message
-        reader_->GetMap().ToMsg(msg);        // Load map data into the message
-        map_pub_.publish(msg);               // publish
-
-        nav_msgs::Path ref_msg;           // Setup the message
-        reader_->GetMap().ToMsg(ref_msg); // Load reference path data into the message
-        reference_pub_.publish(ref_msg);  // publish
+        // Should happen by request?
+        map_pub_.publish(road_msg_);      // publish
+        reference_pub_.publish(ref_msg_); // publish
     }
-    // spline_converter_.VisualizeMap(map);
+
+    // Visualize the map
+    // Two functions here
+    spline_converter_.VisualizeInputData(reader_->GetMap());
+    spline_converter_.VisualizeMap();
 
     ROADMAP_INFO("======= END LOOP =======")
 }

@@ -11,19 +11,20 @@ void SplineConverter::Initialize(ros::NodeHandle &nh, RoadmapConfig *config)
     ROADMAP_WARN("Initialized Spline Converter");
 }
 
-void SplineConverter::ConvertMap(Map &map)
+Map &SplineConverter::ConvertMap(Map &map)
 {
     if (map.ways.size() == 0)
     {
         ROADMAP_WARN("Tried to convert an empty map (returning)")
-        return;
+        return converted_map_; // Needs to also give an error
     }
 
     ROADMAP_INFO_STREAM("Fitting splines over " << map.ways.size() << " ways");
-    VisualizeMap(map);
+    // VisualizeMap(map);
 
     // First fit splines on all defined ways
-    for (Way &way : map.ways)
+    converted_map_ = map;
+    for (Way &way : converted_map_.ways)
     {
         for (auto &lane : way.lanes)
             FitSplineOnLane(lane);
@@ -31,12 +32,12 @@ void SplineConverter::ConvertMap(Map &map)
 
     // Then define additional ways by translating (i.e., for a sidewalk)
 
-    VisualizeMap(map, true);
+    // VisualizeMap(map, true);
 
     if (config_->debug_output_)
     {
         int total_waypoints = 0;
-        for (auto &way : map.ways)
+        for (auto &way : converted_map_.ways)
         {
             for (auto &lane : way.lanes)
             {
@@ -46,65 +47,48 @@ void SplineConverter::ConvertMap(Map &map)
         }
         ROADMAP_INFO_STREAM("Done converting map (" << total_waypoints << " waypoints)");
     }
+
+    return converted_map_;
 }
 
-void SplineConverter::VisualizeMap(Map &map, bool converted_map)
+void SplineConverter::VisualizeMap()
 {
     ROADMAP_INFO("Visualizing the map");
+    bool plot_arrows = false;
 
-    std::unique_ptr<ROSMarkerPublisher> &markers = converted_map ? output_map_markers_ : input_map_markers_;
-    ROSPointMarker &cube = markers->getNewPointMarker("CUBE");
-    ROSPointMarker &arrow = arrow_markers_->getNewPointMarker("ARROW");
+    ROSPointMarker &arrow = arrow_markers_->getNewPointMarker("ARROW"); // Note: is expensive to DRAW, only show when debugging.
 
-    double scale;
+    double scale = 0.2 * config_->scale_;
 
-    for (auto &way : map.ways)
+    for (auto &way : converted_map_.ways)
     {
-        for (size_t i = 0; i < way.lanes.size(); i++)
+        for (size_t i = 0; i < way.lanes.size(); i++) // For all lanes in this way
         {
+            ROSMultiplePointMarker &cube = output_map_markers_->getNewMultiplePointMarker("CUBE"); // Batch rendering (same color and scale)
+            cube.setScale(scale, scale, scale);
+
             const Lane &lane = way.lanes[i];
             const Node *prev_node = nullptr;
             for (const Node &node : lane.nodes)
             {
-                bool is_input_data = !converted_map && i == 0;
-                bool is_translated_input_data = (!is_input_data) && !converted_map;
-                // bool is_fitted_data = (!is_input_data) && (!is_translated_input_data);
 
-                if (is_input_data || is_translated_input_data)
+                cube.setColor((double)lane.type / (double)20);
+
+                if (prev_node && plot_arrows)
                 {
-                    scale = is_input_data ? 0.75 * config_->scale_ : 0.5 * config_->scale_;
 
-                    if (!prev_node) // Color the first node black
-                    {
-                        cube.setColor(0, 0, 0);
-                        scale *= 1.5;
-                    }
-                    else
-                        cube.setColor((double)lane.type / (double)20);
+                    // For fitted points we plot arrows to indicate the direction
+                    arrow.setScale(3 * scale, scale);
+
+                    arrow.setColor((double)lane.type / (double)20);
+
+                    double orientation = std::atan2(node.y - prev_node->y, node.x - prev_node->x);
+                    arrow.setOrientation(orientation);
+                    arrow.addPointMarker(Eigen::Vector3d(
+                        node.x,
+                        node.y,
+                        0.1));
                 }
-                else
-                {
-                    scale = 0.2 * config_->scale_;
-                    cube.setColor((double)lane.type / (double)20);
-
-                    if (prev_node)
-                    {
-
-                        // For fitted points we plot arrows to indicate the direction
-                        arrow.setScale(3 * scale, scale);
-
-                        arrow.setColor((double)lane.type / (double)20);
-
-                        double orientation = std::atan2(node.y - prev_node->y, node.x - prev_node->x);
-                        arrow.setOrientation(orientation);
-                        arrow.addPointMarker(Eigen::Vector3d(
-                            node.x,
-                            node.y,
-                            0.1));
-                    }
-                }
-
-                cube.setScale(scale, scale, scale);
 
                 cube.addPointMarker(Eigen::Vector3d(
                     node.x,
@@ -114,13 +98,72 @@ void SplineConverter::VisualizeMap(Map &map, bool converted_map)
                 prev_node = &node;
             }
 
-            if (converted_map)
-                VisualizeLaneSpline(lane);
+            VisualizeLaneSpline(lane);
+
+            cube.finishPoints();
         }
     }
 
-    markers->publish();
-    arrow_markers_->publish();
+    // For multiple point markers we need to enforce the draw call
+
+    output_map_markers_->publish();
+    if (plot_arrows)
+        arrow_markers_->publish();
+}
+
+void SplineConverter::VisualizeInputData(Map &map)
+{
+    ROADMAP_INFO("Visualizing input data");
+
+    ROSPointMarker &unique_cubes = input_map_markers_->getNewPointMarker("CUBE"); // Unique per color
+
+    double scale;
+
+    for (auto &way : map.ways)
+    {
+        for (size_t i = 0; i < way.lanes.size(); i++) // For all lanes in this way
+        {
+            ROSMultiplePointMarker &cube = input_map_markers_->getNewMultiplePointMarker("CUBE"); // Batch rendering (same color and scale)
+
+            const Lane &lane = way.lanes[i];
+            bool is_first_node = true;
+            for (const Node &node : lane.nodes)
+            {
+                scale = 0.75 * config_->scale_;
+
+                if (is_first_node) // Color the first node black (with the unique cubes)
+                {
+                    unique_cubes.setColor(0, 0, 0);
+
+                    scale *= 1.5;
+                    unique_cubes.setScale(scale, scale, scale);
+                    unique_cubes.addPointMarker(Eigen::Vector3d(
+                        node.x,
+                        node.y,
+                        0.1));
+                    is_first_node = false;
+                    continue;
+                }
+                else
+                {
+                    cube.setColor((double)lane.type / (double)20);
+
+                    cube.setScale(scale, scale, scale);
+
+                    cube.addPointMarker(Eigen::Vector3d(
+                        node.x,
+                        node.y,
+                        0.1));
+                }
+            }
+
+            cube.finishPoints();
+        }
+    }
+
+    // For multiple point markers we need to enforce the draw call
+
+    input_map_markers_->publish();
 }
 
 void SplineConverter::VisualizeLaneSpline(const Lane &lane)

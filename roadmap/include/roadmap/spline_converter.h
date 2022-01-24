@@ -52,8 +52,10 @@ public:
     void Initialize(ros::NodeHandle &nh, RoadmapConfig *config);
 
 public:
+    Map converted_map_;
+
     /** @brief Convert the waypoints of a map object into spline representations */
-    void ConvertMap(Map &map);
+    Map &ConvertMap(Map &map);
 
     /**
      * @brief Visualize a map
@@ -61,7 +63,9 @@ public:
      * @param map the map object
      * @param converted_map is this an output map? Will change the topic and style of visualizations.
      */
-    void VisualizeMap(Map &map, bool converted_map = false);
+    void VisualizeInputData(Map &map);
+
+    void VisualizeMap();
 
 private:
     RoadmapConfig *config_; /** parameters */
