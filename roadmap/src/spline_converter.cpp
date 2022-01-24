@@ -19,7 +19,7 @@ void SplineConverter::ConvertMap(Map &map)
         return;
     }
 
-    ROADMAP_INFO("Fitting splines");
+    ROADMAP_INFO_STREAM("Fitting splines over " << map.ways.size() << " ways");
     VisualizeMap(map);
 
     // First fit splines on all defined ways
@@ -32,6 +32,20 @@ void SplineConverter::ConvertMap(Map &map)
     // Then define additional ways by translating (i.e., for a sidewalk)
 
     VisualizeMap(map, true);
+
+    if (config_->debug_output_)
+    {
+        int total_waypoints = 0;
+        for (auto &way : map.ways)
+        {
+            for (auto &lane : way.lanes)
+            {
+                for (auto &node : lane.nodes)
+                    total_waypoints++;
+            }
+        }
+        ROADMAP_INFO_STREAM("Done converting map (" << total_waypoints << " waypoints)");
+    }
 }
 
 void SplineConverter::VisualizeMap(Map &map, bool converted_map)

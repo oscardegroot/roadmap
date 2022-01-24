@@ -13,6 +13,7 @@ Roadmap::Roadmap()
 
     // Publishers
     map_pub_ = nh_.advertise<roadmap_msgs::RoadPolylineArray>("roadmap/polylines", 1);
+    reference_pub_ = nh_.advertise<nav_msgs::Path>("roadmap/reference", 1);
 
     // Then convert the read waypoints to splines
     spline_converter_.Initialize(nh_, config_.get());
@@ -22,16 +23,25 @@ Roadmap::Roadmap()
     ROADMAP_WARN("Initialization completed");
 }
 
+// Need a better flow here...
 void Roadmap::Poll(const ros::TimerEvent &event)
 {
     ROADMAP_INFO("====== START LOOP ======")
-    reader_->Read();
-    Map &map = reader_->GetMap();
+    runs_++;
+    if (runs_ < 10)
+    {
+        reader_->Read();
+        spline_converter_.ConvertMap(reader_->GetMap());
 
-    spline_converter_.ConvertMap(map);
+        roadmap_msgs::RoadPolylineArray msg; // Setup the message
+        reader_->GetMap().ToMsg(msg);        // Load map data into the message
+        map_pub_.publish(msg);               // publish
 
-    roadmap_msgs::RoadPolylineArray msg; // Setup the message
-    map.ToMsg(msg);                      // Load map data into the message
-    map_pub_.publish(msg);               // publish
+        nav_msgs::Path ref_msg;           // Setup the message
+        reader_->GetMap().ToMsg(ref_msg); // Load reference path data into the message
+        reference_pub_.publish(ref_msg);  // publish
+    }
+    // spline_converter_.VisualizeMap(map);
+
     ROADMAP_INFO("======= END LOOP =======")
 }

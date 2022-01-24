@@ -82,8 +82,12 @@ private:
      */
     void ReadYAML(const std::string &file);
 
-    // XML Read function
-    void ReadWays(const rapidxml::xml_document<> &doc);
+    /**
+     * @brief Read an OSM file with map data
+     * 
+     * @param doc file to read from
+     */
+    void ReadOSM(const std::string &file);
 };
 
 #endif // __READER_H__

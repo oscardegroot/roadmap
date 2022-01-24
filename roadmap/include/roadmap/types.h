@@ -4,7 +4,15 @@
 #include "roadmap_msgs/RoadPolylineArray.h"
 #include "roadmap_msgs/RoadPolyline.h"
 
+#include "nav_msgs/Path.h"
+#include "geometry_msgs/PoseStamped.h"
+#include "geometry_msgs/Pose.h"
+
 #include "spline.h"
+#include "lmpcc_tools/helpers.h"
+
+// Radius of Earth
+#define GLOBE_RADIUS 6371.0e3
 
 /**
  * @brief Struct describing a waypoint node (x, y, theta)
@@ -19,6 +27,14 @@ struct Node
     Node(double _x, double _y, double _theta)
         : x(_x), y(_y), theta(_theta)
     {
+    }
+
+    // Is skewed!
+    Node(double _lat, double _long, double base_latitude, double base_longitude, double _theta)
+    {
+        x = GLOBE_RADIUS * (_long - base_longitude) * std::cos(0.);
+        y = GLOBE_RADIUS * (_lat - base_latitude);
+        theta = _theta;
     }
 };
 
@@ -124,13 +140,13 @@ struct Way
         {
             if (two_way)
             {
-                lanes.emplace_back(nodes, plus_offset + width / 2., roadmap_msgs::RoadPolyline::LANECENTER_FREEWAY, id);
-                lanes.emplace_back(nodes, minus_offset - width / 2., roadmap_msgs::RoadPolyline::LANECENTER_FREEWAY, id);
+                lanes.emplace_back(nodes, plus_offset, roadmap_msgs::RoadPolyline::LANECENTER_FREEWAY, id); // Main road is ON the reference
+                lanes.emplace_back(nodes, minus_offset - width, roadmap_msgs::RoadPolyline::LANECENTER_FREEWAY, id);
 
-                lanes.emplace_back(nodes, plus_offset, roadmap_msgs::RoadPolyline::ROADLINE_BROKENSINGLEWHITE, id);
+                lanes.emplace_back(nodes, plus_offset - width / 2., roadmap_msgs::RoadPolyline::ROADLINE_BROKENSINGLEWHITE, id);
 
-                lanes.emplace_back(nodes, minus_offset - width, roadmap_msgs::RoadPolyline::ROADEDGEBOUNDARY, id);
-                lanes.emplace_back(nodes, plus_offset + width, roadmap_msgs::RoadPolyline::ROADEDGEBOUNDARY, id);
+                lanes.emplace_back(nodes, plus_offset + width / 2., roadmap_msgs::RoadPolyline::ROADEDGEBOUNDARY, id);
+                lanes.emplace_back(nodes, minus_offset - 3. / 2. * width, roadmap_msgs::RoadPolyline::ROADEDGEBOUNDARY, id);
             }
             else
             {
@@ -156,8 +172,8 @@ struct Way
         {
             if (two_way)
             {
-                plus_offset += width;
-                minus_offset -= width;
+                plus_offset += width / 2.;
+                minus_offset -= 3. * width / 2.;
             }
             else
             {
@@ -223,6 +239,51 @@ struct Map
 
         msg.header.stamp = ros::Time::now();
         msg.header.frame_id = "map";
+    }
+
+    /**
+     * @brief Load the data of the reference path in this map into a ros message.
+     * 
+     * @param msg the output message
+     */
+    void ToMsg(nav_msgs::Path &msg)
+    {
+        // Save the road as reference trajectory
+
+        // Load the ways one by one
+        for (Way &way : ways)
+        {
+            for (Lane &lane : way.lanes)
+            {
+                // Look for the reference trajectory
+                if (lane.type == roadmap_msgs::RoadPolyline::LANECENTER_FREEWAY)
+                {
+                    msg.poses.reserve(lane.nodes.size());
+
+                    // geometry_msgs::Pose pose_msg;
+                    // line_msg.type = lane.type;
+                    // line_msg.id = lane.id;
+
+                    // geometry_msgs::Point point;
+                    geometry_msgs::PoseStamped pose_msg;
+                    pose_msg.header.stamp = ros::Time::now();
+                    pose_msg.header.frame_id = "map";
+
+                    for (Node &node : lane.nodes)
+                    {
+                        pose_msg.pose.position.x = node.x;
+                        pose_msg.pose.position.y = node.y;
+
+                        pose_msg.pose.orientation = Helpers::angleToQuaternion(node.theta);
+
+                        msg.poses.push_back(pose_msg);
+                    }
+                    msg.header.stamp = ros::Time::now();
+                    msg.header.frame_id = "map";
+                    return;
+                }
+            }
+        }
     }
 };
 

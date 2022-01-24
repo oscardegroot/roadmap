@@ -1,15 +1,16 @@
 roadmap:
   debug_output: true
   update_frequency: 1
-  # map_file_name: 'maps/test_map.xml'
+  # map_file_name: 'maps/test_map.osm'
   map_file_name: 'maps/test_map.yaml'
+  # map_file_name: 'maps/test_map.xml'
 
   # Spline settings
   spline:
-    fit_clothoid: true  # Fit a clothoid before fitting cubic splines?
+    fit_clothoid: false  # Fit a clothoid before fitting cubic splines?
     minimum_waypoint_distance: 2.0  # Ignore waypoints closer than this distance together
-    spline_sample_distance: 1.0  # distance between sampled waypoints on the spline
-    clothoid_point_per_xm: 1
+    spline_sample_distance: 1 #(25) distance between sampled waypoints on the spline
+    clothoid_point_per_xm: 1 #(0.01)
 
   # Visual settings
   scale: 1.0

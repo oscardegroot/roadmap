@@ -24,6 +24,8 @@ void Reader::Read(const std::string &file_name)
     // Read the file with the correct file extension
     if (map_file.substr(map_file.find_last_of(".") + 1) == "xml")
         ReadXML(map_file);
+    else if (map_file.substr(map_file.find_last_of(".") + 1) == "osm")
+        ReadOSM(map_file);
     else
         ReadYAML(map_file);
 }
@@ -40,9 +42,37 @@ void Reader::ReadXML(const std::string &file)
     rapidxml::xml_document<> doc;
     doc.parse<0>(xmlFile.data());
 
-    ReadWays(doc);
+    // Ways connect the nodes
+    int id = 0;
+    for (rapidxml::xml_node<> *way = doc.first_node("way"); way; way = way->next_sibling("way"))
+    {
+        // Create a new way and add its nodes (nodes with ref attribute)
+        Way new_way;
+        for (rapidxml::xml_node<> *node = way->first_node("nd"); node; node = node->next_sibling("nd"))
+        {
+            // int id = atoi(node->first_attribute("ref")->value());
+            new_way.AddNode(Node(atof(node->first_attribute("x")->value()),
+                                 atof(node->first_attribute("y")->value()),
+                                 atof(node->first_attribute("theta")->value())));
+        }
 
-    ROADMAP_INFO("XML Read.");
+        for (rapidxml::xml_node<> *lane = way->first_node("lane"); lane; lane = lane->next_sibling("lane"))
+        {
+            // Optional two way parameters (default = false)
+            bool two_way = false;
+            if (lane->first_attribute("two_way")->value())
+                two_way = bool(atoi(lane->first_attribute("two_way")->value()));
+
+            // Create a lane for each lane tag
+            new_way.AddLane(std::string(lane->first_attribute("type")->value()),
+                            atof(lane->first_attribute("width")->value()),
+                            two_way,
+                            id);
+        }
+
+        map_.ways.push_back(new_way);
+        ROADMAP_INFO("XML Read.");
+    }
 }
 
 void Reader::ReadYAML(const std::string &file)
@@ -75,46 +105,105 @@ void Reader::ReadYAML(const std::string &file)
     ROADMAP_INFO("YAML Read.");
 }
 
-void Reader::ReadWays(const rapidxml::xml_document<> &doc)
+void Reader::ReadOSM(const std::string &file)
 {
-    // Ways connect the nodes
-    int id = 0;
-    for (rapidxml::xml_node<> *way = doc.first_node("way"); way; way = way->next_sibling("way"))
+    rapidxml::file<> xmlFile(file.c_str()); // Default template is char
+    rapidxml::xml_document<> doc;
+    doc.parse<0>(xmlFile.data());
+
+    map_.Clear();
+
+    // Read the OSM
+    rapidxml::xml_node<> *osm = doc.first_node("osm");
+
+    // Estimate the average latitude and longitude
+    double base_latitude = 0.;
+    double base_longitude = 0.;
+    int num_nodes = 0;
+    for (rapidxml::xml_node<> *node = osm->first_node("node"); node; node = node->next_sibling("node"))
     {
-        // Create a new way and add its nodes (nodes with ref attribute)
+        base_latitude += atof(node->first_attribute("lat")->value());
+        base_longitude += atof(node->first_attribute("lon")->value());
+        num_nodes++;
+    }
+    base_latitude /= (double)num_nodes;
+    base_longitude /= (double)num_nodes;
+
+    // First read all the nodes
+    std::map<long, Node> nodes; /** A map from ID to node */
+    for (rapidxml::xml_node<> *node = osm->first_node("node"); node; node = node->next_sibling("node"))
+    {
+
+        long node_id = atol(node->first_attribute("id")->value());
+        nodes[node_id] = Node(atof(node->first_attribute("lat")->value()),
+                              atof(node->first_attribute("lon")->value()),
+                              base_latitude,
+                              base_longitude,
+                              0.);
+
+        // std::cout << nodes[node_id].x << ", " << nodes[node_id].y << std::endl;
+    }
+    // Then read the ways and connect them to the nodes
+    int id;
+    for (rapidxml::xml_node<> *way = osm->first_node("way"); way; way = way->next_sibling("way"))
+    {
         Way new_way;
+
+        // Add its nodes
         for (rapidxml::xml_node<> *node = way->first_node("nd"); node; node = node->next_sibling("nd"))
         {
-            // int id = atoi(node->first_attribute("ref")->value());
-            new_way.AddNode(Node(atof(node->first_attribute("x")->value()),
-                                 atof(node->first_attribute("y")->value()),
-                                 atof(node->first_attribute("theta")->value())));
-        }
+            // Add the current node to the way
+            long node_id = atol(node->first_attribute("ref")->value());
 
-        for (rapidxml::xml_node<> *lane = way->first_node("lane"); lane; lane = lane->next_sibling("lane"))
+            if (nodes.find(node_id) == nodes.end())
+                std::cout << "node not found..." << std::endl;
+            else
+            {
+                new_way.AddNode(nodes[node_id]);
+                std::cout << "Adding: " << nodes[node_id].x << ", " << nodes[node_id].y << std::endl;
+            }
+        }
+        // Check its tags
+        bool is_road = true;
+        std::string type;
+        for (rapidxml::xml_node<> *tag = way->first_node("tag"); tag; tag = tag->next_sibling("tag"))
         {
-            // Optional two way parameters (default = false)
-            bool two_way = false;
-            if (lane->first_attribute("two_way")->value())
-                two_way = bool(atoi(lane->first_attribute("two_way")->value()));
+            if (!std::string(tag->first_attribute("k")->value()).compare("highway"))
+                type = "road";
 
-            // Create a lane for each lane tag
-            new_way.AddLane(std::string(lane->first_attribute("type")->value()),
-                            atof(lane->first_attribute("width")->value()),
-                            two_way,
-                            id);
+            // Remove buildings
+            if ((!std::string(tag->first_attribute("k")->value()).compare("building")) && (!std::string(tag->first_attribute("k")->value()).compare("yes")))
+            {
+                is_road = false;
+                break;
+            }
         }
+
+        // Only proceed if we are reading a road
+        if (!is_road)
+            continue;
+
+        new_way.AddLane(type, 4.0, false, id);
 
         map_.ways.push_back(new_way);
-
-        // Print the result
-        // for (auto &lane : new_way.lanes)
-        // {
-        //     std::cout << lane.id << std::endl;
-        //     for (auto &node : lane.nodes)
-        //         std::cout << "\tNode " << lane.id << ": " << node.x << ", " << node.y << std::endl;
-        // }
     }
+
+    // for (rapidxml::xml_node<> *lane = way->first_node("lane"); lane; lane = lane->next_sibling("lane"))
+    // {
+    //     // Optional two way parameters (default = false)
+    //     bool two_way = false;
+    //     if (lane->first_attribute("two_way")->value())
+    //         two_way = bool(atoi(lane->first_attribute("two_way")->value()));
+
+    //     // Create a lane for each lane tag
+    //     new_way.AddLane(std::string(lane->first_attribute("type")->value()),
+    //                     atof(lane->first_attribute("width")->value()),
+    //                     two_way,
+    //                     id);
+    // }
+
+    // map_.ways.push_back(new_way);
+    // ROADMAP_INFO("XML Read.");
 }
 
 void Reader::WaypointCallback(const nav_msgs::Path &msg)
@@ -137,7 +226,7 @@ void Reader::WaypointCallback(const nav_msgs::Path &msg)
     }
 
     int id = 0;
-    // Add a regular road and sidewalk by default
+    // Add a regular road and sidewalk by default (road is not two way! or otherwise centered offcentre)
     new_way.AddLane("road", 4.0, true, id);
     new_way.AddLane("sidewalk", 2.0, true, id);
     map_.ways.push_back(new_way);
