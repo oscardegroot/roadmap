@@ -2,7 +2,7 @@
 
 void Reader::Read()
 {
-    std::string map_file = ros::package::getPath("roadmap") + "/" + config_->map_file_name_;
+    std::string map_file = ros::package::getPath("prius_launch") + "/launch/control/roadmap/" + config_->map_file_name_; // ros::package::getPath("roadmap") + "/" + config_->map_file_name_;
     Read(map_file);
 }
 
@@ -16,10 +16,12 @@ void Reader::Read(const std::string &file_name)
 
     // If the path does not contain the package, add it
     std::string map_file;
-    if (file_name.find("//roadmap//") != std::string::npos)
+    if (file_name.find("//roadmap//") != std::string::npos || file_name.find("//prius_launch//") != std::string::npos)
         map_file = ros::package::getPath("roadmap") + "/" + file_name;
     else
         map_file = file_name;
+
+	ROADMAP_INFO_STREAM("\tFile: " << map_file);
 
     // Read the file with the correct file extension
     if (map_file.substr(map_file.find_last_of(".") + 1) == "xml")
