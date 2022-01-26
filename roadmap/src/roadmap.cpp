@@ -66,12 +66,12 @@ void Roadmap::Poll(const ros::TimerEvent &event)
 {
     ROADMAP_INFO("====== START LOOP ======")
     runs_++;
-    if (runs_ < 10)
-    {
+    // if (runs_ < 10)
+    // {
         // Should happen by request?
         map_pub_.publish(road_msg_);      // publish
         reference_pub_.publish(ref_msg_); // publish
-    }
+    // }
 
     // Visualize the map
     // Two functions here
