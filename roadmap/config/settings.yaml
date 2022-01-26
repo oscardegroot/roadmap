@@ -1,8 +1,9 @@
 roadmap:
   debug_output: false
   update_frequency: 3 # For visuals
+  map_package_name: "roadmap"
+  map_file_name: "maps/test_map.yaml"
   # map_file_name: 'maps/test_map.osm'
-  map_file_name: 'maps/test_map.yaml'
   # map_file_name: 'maps/test_map.xml'
 
   # Spline settings

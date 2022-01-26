@@ -17,6 +17,7 @@ bool RoadmapConfig::initialize() //const std::string& node_handle_name
   ros::NodeHandle nh;
 
   retrieveParameter(nh, "roadmap/debug_output", debug_output_, true);
+  retrieveParameter(nh, "roadmap/map_package_name", map_package_name_);
   retrieveParameter(nh, "roadmap/map_file_name", map_file_name_);
   retrieveParameter(nh, "roadmap/update_frequency", update_frequency_, 10.);
 

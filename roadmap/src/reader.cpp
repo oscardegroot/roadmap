@@ -2,7 +2,7 @@
 
 void Reader::Read()
 {
-    std::string map_file = ros::package::getPath("prius_launch") + "/launch/control/roadmap/" + config_->map_file_name_; // ros::package::getPath("roadmap") + "/" + config_->map_file_name_;
+    std::string map_file = ros::package::getPath(config_->map_package_name_) + "/" + config_->map_file_name_;
     Read(map_file);
 }
 
@@ -16,8 +16,8 @@ void Reader::Read(const std::string &file_name)
 
     // If the path does not contain the package, add it
     std::string map_file;
-    if (file_name.find("//roadmap//") != std::string::npos || file_name.find("//prius_launch//") != std::string::npos)
-        map_file = ros::package::getPath("roadmap") + "/" + file_name;
+    if (file_name.find("//" + config_->map_package_name_ + "//") != std::string::npos)
+        map_file = ros::package::getPath(config_->map_package_name_) + "/" + file_name;
     else
         map_file = file_name;
 
@@ -34,7 +34,7 @@ void Reader::Read(const std::string &file_name)
 
 void Reader::Read(const std::string &&file_name)
 {
-    std::string map_file = ros::package::getPath("roadmap") + "/" + file_name;
+    std::string map_file = ros::package::getPath(config_->map_package_name_) + "/" + file_name;
     Read(map_file);
 }
 
