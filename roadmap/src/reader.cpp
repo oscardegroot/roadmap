@@ -51,8 +51,8 @@ void Reader::ReadXML(const std::string &file)
         for (rapidxml::xml_node<> *node = way->first_node("nd"); node; node = node->next_sibling("nd"))
         {
             // int id = atoi(node->first_attribute("ref")->value());
-            new_way.AddNode(Node(atof(node->first_attribute("x")->value()),
-                                 atof(node->first_attribute("y")->value()),
+            new_way.AddNode(Node(offset_.position.x + atof(node->first_attribute("x")->value()),
+                                 offset_.position.y + atof(node->first_attribute("y")->value()),
                                  atof(node->first_attribute("theta")->value())));
         }
 
@@ -95,7 +95,7 @@ void Reader::ReadYAML(const std::string &file)
     // Create a way object
     Way new_way;
     for (size_t i = 0; i < x.size(); i++)
-        new_way.AddNode(Node(x[i], y[i], theta[i])); // Create nodes
+        new_way.AddNode(Node(offset_.position.x + x[i], offset_.position.y + y[i], theta[i])); // Create nodes
 
     int id = 0;
     // Add a regular road and sidewalk by default
@@ -232,4 +232,9 @@ void Reader::WaypointCallback(const nav_msgs::Path &msg)
     map_.ways.push_back(new_way);
 
     ROADMAP_INFO("Waypoints Saved.");
+}
+
+void Reader::OffsetCallback(const geometry_msgs::PoseWithCovarianceStamped &msg) 
+{
+    offset_ = msg.pose.pose;
 }
