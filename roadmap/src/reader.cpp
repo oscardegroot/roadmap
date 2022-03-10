@@ -2,7 +2,7 @@
 
 void Reader::Read()
 {
-    std::string map_file = ros::package::getPath("roadmap") + "/" + config_->map_file_name_;
+    std::string map_file = ros::package::getPath(config_->map_package_name_) + "/" + config_->map_file_name_;
     Read(map_file);
 }
 
@@ -16,10 +16,12 @@ void Reader::Read(const std::string &file_name)
 
     // If the path does not contain the package, add it
     std::string map_file;
-    if (file_name.find("//roadmap//") != std::string::npos)
-        map_file = ros::package::getPath("roadmap") + "/" + file_name;
+    if (file_name.find("//" + config_->map_package_name_ + "//") != std::string::npos)
+        map_file = ros::package::getPath(config_->map_package_name_) + "/" + file_name;
     else
         map_file = file_name;
+
+	ROADMAP_INFO_STREAM("\tFile: " << map_file);
 
     // Read the file with the correct file extension
     if (map_file.substr(map_file.find_last_of(".") + 1) == "xml")
@@ -32,7 +34,7 @@ void Reader::Read(const std::string &file_name)
 
 void Reader::Read(const std::string &&file_name)
 {
-    std::string map_file = ros::package::getPath("roadmap") + "/" + file_name;
+    std::string map_file = ros::package::getPath(config_->map_package_name_) + "/" + file_name;
     Read(map_file);
 }
 
@@ -51,8 +53,8 @@ void Reader::ReadXML(const std::string &file)
         for (rapidxml::xml_node<> *node = way->first_node("nd"); node; node = node->next_sibling("nd"))
         {
             // int id = atoi(node->first_attribute("ref")->value());
-            new_way.AddNode(Node(atof(node->first_attribute("x")->value()),
-                                 atof(node->first_attribute("y")->value()),
+            new_way.AddNode(Node(offset_.position.x + atof(node->first_attribute("x")->value()),
+                                 offset_.position.y + atof(node->first_attribute("y")->value()),
                                  atof(node->first_attribute("theta")->value())));
         }
 
@@ -95,7 +97,7 @@ void Reader::ReadYAML(const std::string &file)
     // Create a way object
     Way new_way;
     for (size_t i = 0; i < x.size(); i++)
-        new_way.AddNode(Node(x[i], y[i], theta[i])); // Create nodes
+        new_way.AddNode(Node(offset_.position.x + x[i], offset_.position.y + y[i], theta[i])); // Create nodes
 
     int id = 0;
     // Add a regular road and sidewalk by default
@@ -232,4 +234,9 @@ void Reader::WaypointCallback(const nav_msgs::Path &msg)
     map_.ways.push_back(new_way);
 
     ROADMAP_INFO("Waypoints Saved.");
+}
+
+void Reader::OffsetCallback(const geometry_msgs::PoseWithCovarianceStamped &msg) 
+{
+    offset_ = msg.pose.pose;
 }

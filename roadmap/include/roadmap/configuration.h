@@ -28,6 +28,7 @@ public:
   // High-level Parameters
   bool debug_output_;
 
+  std::string map_package_name_;
   std::string map_file_name_;
 
   double update_frequency_;

@@ -9,6 +9,8 @@
 #include <map>
 
 #include <nav_msgs/Path.h>
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 
 #include "rapidxml_utils.hpp"
 
@@ -28,6 +30,10 @@ public:
         : config_(config)
     {
         from_callback_ = false;
+        offset_ = geometry_msgs::Pose();
+        offset_.position.x = 0.;
+        offset_.position.y = 0.;
+
     }
 
 public:
@@ -62,9 +68,18 @@ public:
      */
     void WaypointCallback(const nav_msgs::Path &msg);
 
+    /**
+     * @brief Debug callback for translating the map with a Pose
+     * 
+     * @param msg Translation
+     */
+    void OffsetCallback(const geometry_msgs::PoseWithCovarianceStamped &msg);
+
 private:
     Map map_;               /** The read map */
     RoadmapConfig *config_; /** Parameters */
+
+    geometry_msgs::Pose offset_;
 
     bool from_callback_; /** Are we reading a callback instead of a file? */
 
@@ -89,5 +104,7 @@ private:
      */
     void ReadOSM(const std::string &file);
 };
+
+
 
 #endif // __READER_H__

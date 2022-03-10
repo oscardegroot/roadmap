@@ -30,6 +30,8 @@ public:
      */
     void WaypointCallback(const nav_msgs::Path &msg);
 
+    void OffsetCallback(const geometry_msgs::PoseWithCovarianceStamped &msg);
+
 private:
     ros::NodeHandle nh_;
 
@@ -39,6 +41,7 @@ private:
     std::unique_ptr<Reader> reader_;   /** File reader class */
 
     ros::Subscriber waypoints_sub_; /** Subscriber for external waypoints */
+    ros::Subscriber offset_sub_; /** Subscriber for external waypoints */
     ros::Publisher map_pub_;        /** Publisher for road polyline output */
     ros::Publisher reference_pub_;  /** Publisher for road polyline output */
 
@@ -64,5 +67,7 @@ private:
      */
     void ConvertMap();
 };
+
+
 
 #endif // __ROADMAP_H__
