@@ -15,7 +15,7 @@ Roadmap::Roadmap()
     offset_sub_ = nh_.subscribe("roadmap/offset", 1, &Roadmap::OffsetCallback, this); // Subscriber for waypoints (forwarded to the reader)
 
     // Publishers
-    map_pub_ = nh_.advertise<roadmap_msgs::RoadPolylineArray>("roadmap/polylines", 1);
+    map_pub_ = nh_.advertise<roadmap_msgs::RoadPolylineArray>("roadmap/road_polylines", 1);
     reference_pub_ = nh_.advertise<nav_msgs::Path>("roadmap/reference", 1);
 
     // Then convert the read waypoints to splines
@@ -31,7 +31,7 @@ Roadmap::Roadmap()
 // Have two maps (input / output)
 void Roadmap::ReadFromFile()
 {
-    ROADMAP_INFO("Reading map from file")
+    ROADMAP_INFO("Reading map from file");
 
     reader_->Read();
     ConvertMap();
@@ -39,7 +39,7 @@ void Roadmap::ReadFromFile()
 
 void Roadmap::WaypointCallback(const nav_msgs::Path &msg)
 {
-    ROADMAP_INFO("Received waypoints")
+    ROADMAP_INFO("Received waypoints");
 
     reader_->WaypointCallback(msg);
     ConvertMap();
@@ -64,7 +64,7 @@ void Roadmap::ConvertMap()
 
 void Roadmap::Poll(const ros::TimerEvent &event)
 {
-    ROADMAP_INFO("====== START LOOP ======")
+    ROADMAP_INFO("====== START LOOP ======");
     runs_++;
     // if (runs_ < 10)
     // {
@@ -72,11 +72,11 @@ void Roadmap::Poll(const ros::TimerEvent &event)
         map_pub_.publish(road_msg_);      // publish
         reference_pub_.publish(ref_msg_); // publish
     // }
-
+    ROADMAP_INFO("Published polylines and reference");
     // Visualize the map
     // Two functions here
     spline_converter_.VisualizeInputData(reader_->GetMap());
     spline_converter_.VisualizeMap();
 
-    ROADMAP_INFO("======= END LOOP =======")
+    ROADMAP_INFO("======= END LOOP =======");
 }
