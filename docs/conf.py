@@ -38,8 +38,41 @@ release = '0.1'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
+# The `extensions` list should already be in here from `sphinx-quickstart`
 extensions = [
+    # there may be others here already, e.g. 'sphinx.ext.mathjax'
+    'breathe',
+    'exhale'
 ]
+
+
+# Setup the breathe extension
+breathe_projects = {
+    "LMPCC": "./_doxygen/xml"
+}
+breathe_default_project = "LMPCC"
+
+# Setup the exhale extension
+exhale_args = {
+    # These arguments are required
+    "containmentFolder":     "./api",
+    "rootFileName":          "library_root.rst",
+    "doxygenStripFromPath":  "..",
+    # Heavily encouraged optional argument (see docs)
+    "rootFileTitle":         "Library API",
+    # Suggested optional arguments
+    "createTreeView":        True,
+    # TIP: if using the sphinx-bootstrap-theme, you need
+    # "treeViewIsBootstrap": True,
+    "exhaleExecutesDoxygen": True,
+    "exhaleDoxygenStdin":    "INPUT = ../roadmap/src ../roadmap/include"
+}
+
+# Tell sphinx what the primary language being documented is.
+primary_domain = 'cpp'
+
+# Tell sphinx what the pygments highlight language should be.
+highlight_language = 'cpp'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -87,7 +120,7 @@ html_theme = 'alabaster'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-html_extra_path = ['../build/html']
+# html_extra_path = ['../build/html']
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -174,5 +207,5 @@ epub_title = project
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
 
-import subprocess
-subprocess.call('cd .. ; doxygen', shell=True)
+# import subprocess
+# subprocess.call('cd .. ; doxygen', shell=True)
