@@ -42,31 +42,31 @@ release = '0.1'
 extensions = [
     # there may be others here already, e.g. 'sphinx.ext.mathjax'
     'breathe',
-    'exhale'
+    'sphinx_rtd_theme'
 ]
 
 
 # Setup the breathe extension
 breathe_projects = {
-    "LMPCC": "./_doxygen/xml"
+    "LMPCC": "docs/build/xml"
 }
 breathe_default_project = "LMPCC"
 
 # Setup the exhale extension
-exhale_args = {
-    # These arguments are required
-    "containmentFolder":     "./api",
-    "rootFileName":          "library_root.rst",
-    "doxygenStripFromPath":  "..",
-    # Heavily encouraged optional argument (see docs)
-    "rootFileTitle":         "Library API",
-    # Suggested optional arguments
-    "createTreeView":        True,
-    # TIP: if using the sphinx-bootstrap-theme, you need
-    # "treeViewIsBootstrap": True,
-    "exhaleExecutesDoxygen": True,
-    "exhaleDoxygenStdin":    "INPUT = ../roadmap/src ../roadmap/include"
-}
+# exhale_args = {
+#     # These arguments are required
+#     "containmentFolder":     "./api",
+#     "rootFileName":          "library_root.rst",
+#     "doxygenStripFromPath":  "..",
+#     # Heavily encouraged optional argument (see docs)
+#     "rootFileTitle":         "Library API",
+#     # Suggested optional arguments
+#     "createTreeView":        True,
+#     # TIP: if using the sphinx-bootstrap-theme, you need
+#     # "treeViewIsBootstrap": True,
+#     "exhaleExecutesDoxygen": True,
+#     "exhaleDoxygenStdin":    "INPUT = ../roadmap/src ../roadmap/include"
+# }
 
 # Tell sphinx what the primary language being documented is.
 primary_domain = 'cpp'
@@ -107,7 +107,7 @@ pygments_style = None
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
