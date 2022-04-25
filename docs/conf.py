@@ -43,7 +43,8 @@ release = '0.1'
 extensions = [
     # there may be others here already, e.g. 'sphinx.ext.mathjax'
     'breathe',
-    'sphinx_rtd_theme'
+    'sphinx_rtd_theme',
+    'myst_parser'
 ]
 
 
