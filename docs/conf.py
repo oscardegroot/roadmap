@@ -207,5 +207,10 @@ epub_title = project
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
 
-# import subprocess
-# subprocess.call('cd .. ; doxygen', shell=True)
+import subprocess, os
+
+read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
+
+if read_the_docs_build:
+
+    subprocess.call('cd ../doxygen; doxygen', shell=True)
