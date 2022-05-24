@@ -1,9 +1,9 @@
-# roadmap
+# Roadmap
 Roadmap node for converting waypoints to polylines. 
 
 Takes hardcoded waypoints and fits lanes through thw waypoints via a Clothoid and/or Cubic spline fitting. The polylines are outputted as `roadmap_msgs/RoadPolylineArray.msg` on `/roadmap/polylines`.
 
-Code documentation can be found here: [https://github.com/oscardegroot/roadmap/blob/main/roadmap/docs/html/index.html](https://github.com/oscardegroot/roadmap/blob/main/roadmap/docs/html/index.html)
+Documentation is found here: [https://lmpcc-roadmap.readthedocs.io/en/latest/index.html](https://lmpcc-roadmap.readthedocs.io/en/latest/index.html)
 
 ## Installing
 All components should be installed automatically using (to be checked):
