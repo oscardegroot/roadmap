@@ -21,6 +21,7 @@ This package converts input waypoints to output cubic splines that can be used a
 
    pages/map_specification.rst
    pages/spline_generation.rst
+   pages/output.rst
    pages/visualization.rst
 
 

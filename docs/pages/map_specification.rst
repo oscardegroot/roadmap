@@ -69,3 +69,28 @@ Callbacks
 Waypoints can be supplied by a callback through ROS via a ``nav_msgs`` ``Path`` message. The road around the waypoint is assumed to be a two-way road with 4m width and a two-way sidewalk with 2m width.
 
 The topic to listen to can be set in ``settings.yaml``.
+
+An example callback is given below::
+
+	void WaypointsCallback(const nav_msgs::Path &msg)
+	{
+	    int waypoint_count = 0;
+
+	    theta_.clear();
+	    x_.clear();
+	    y_.clear();
+
+	    for (size_t i = 0; i < msg.poses.size(); i += 2)
+	    {
+	        theta_.push_back(Helpers::quaternionToAngle(msg.poses[i].pose));
+	        x_.push_back(msg.poses[i].pose.position.x);
+	        y_.push_back(msg.poses[i].pose.position.y);
+
+	        waypoint_count++;
+	    }
+
+	    // Load points into an object
+	    if (external_waypoints_callback_)
+	        (controller_->*external_waypoints_callback_)();
+	}
+
