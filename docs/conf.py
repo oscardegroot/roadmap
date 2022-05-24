@@ -50,14 +50,14 @@ extensions = [
 
 # Setup the breathe extension
 breathe_projects = {
-    "LMPCC": "build/xml"
+    "Roadmap": "build/xml"
 }
 
 breathe_projects_source = {
-    "LMPCC" : ("../roadmap/include/roadmap", ["roadmap.h", "configuration.h", "helpers.h", "spline_converter.h", "types.h"])
+    "Roadmap" : ("../roadmap/include/roadmap", ["roadmap.h", "configuration.h", "helpers.h", "spline_converter.h", "types.h", "reader.h"])
 }
 
-breathe_default_project = "LMPCC"
+breathe_default_project = "Roadmap"
 
 # Setup the exhale extension
 # exhale_args = {
@@ -216,7 +216,7 @@ epub_exclude_files = ['search.html']
 
 import subprocess, os
 
-read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
+read_the_docs_build = True #os.environ.get('READTHEDOCS', None) == 'True'
 
 if read_the_docs_build:
 
