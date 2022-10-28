@@ -40,7 +40,7 @@ struct Node
 
 /**
  * @brief Struct describing a lane
- * 
+ *
  */
 struct Lane
 {
@@ -54,7 +54,7 @@ struct Lane
 
     /**
      * @brief Construct a new Lane object
-     * 
+     *
      * @param _nodes nodes of the centerlane
      * @param offset offset with respect to the centerlane for this lane
      * @param _type type of lane (see road_msgs/RoadPolyline)
@@ -81,7 +81,7 @@ struct Lane
 
     /**
      * @brief Aassign a spline to this lane
-    */
+     */
     void AssignSpline(const tk::spline &_spline_x, const tk::spline &_spline_y)
     {
         spline_x = _spline_x;
@@ -92,7 +92,7 @@ struct Lane
 
 /**
  * @brief A way struct that may contain multiple lanes (e.g., road, sidewalk, etc.)
- * 
+ *
  */
 struct Way
 {
@@ -108,7 +108,7 @@ struct Way
 
     /**
      * @brief Add a node to the center line of this way
-     * 
+     *
      * @param node the node to add
      */
     void AddNode(const Node &node)
@@ -119,7 +119,7 @@ struct Way
     /**
      * @brief Add a road by copying the current data and offsetting it.
      * Can only be called before the spline is fit!
-     * 
+     *
      * @param _type type of lane to add
      * @param width width of the lane
      * @param two_way is it a two way lane?
@@ -186,9 +186,9 @@ struct Way
 
 /**
  * @brief Struct to define the map.
- * 
+ *
  * Just contains a vector of ways for now
- * 
+ *
  */
 struct Map
 {
@@ -200,7 +200,7 @@ struct Map
 
     /**
      * @brief Clear the map
-     * 
+     *
      */
     void Clear()
     {
@@ -209,7 +209,7 @@ struct Map
 
     /**
      * @brief Load the data of this map object into a ros message.
-     * 
+     *
      * @param msg the output message
      */
     void ToMsg(roadmap_msgs::RoadPolylineArray &msg)
@@ -243,7 +243,7 @@ struct Map
 
     /**
      * @brief Load the data of the reference path in this map into a ros message.
-     * 
+     *
      * @param msg the output message
      */
     void ToMsg(nav_msgs::Path &msg)

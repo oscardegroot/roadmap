@@ -10,7 +10,7 @@ Roadmap::Roadmap()
 
     // Subscribers
     waypoints_sub_ = nh_.subscribe(config_->external_waypoint_topic_, 1, &Roadmap::WaypointCallback, this); // Subscriber for waypoints (forwarded to the reader)
-    
+
     // Debug: listens to rviz point for translating the map
     offset_sub_ = nh_.subscribe("roadmap/offset", 1, &Roadmap::OffsetCallback, this); // Subscriber for waypoints (forwarded to the reader)
 
@@ -45,12 +45,11 @@ void Roadmap::WaypointCallback(const nav_msgs::Path &msg)
     ConvertMap();
 }
 
-void Roadmap::OffsetCallback(const geometry_msgs::PoseWithCovarianceStamped &msg) 
+void Roadmap::OffsetCallback(const geometry_msgs::PoseWithCovarianceStamped &msg)
 {
     reader_->OffsetCallback(msg);
     ReadFromFile();
 }
-
 
 void Roadmap::ConvertMap()
 {
@@ -58,8 +57,8 @@ void Roadmap::ConvertMap()
 
     road_msg_.road_polylines.clear();
     ref_msg_.poses.clear();
-    reader_->GetMap().ToMsg(road_msg_); // Load map data into the message
-    reader_->GetMap().ToMsg(ref_msg_);  // Load reference path data into the message
+    reader_->GetMap().ToMsg(road_msg_);                                     // Load map data into the message
+    /*reader_->GetMap()*/ spline_converter_.converted_map_.ToMsg(ref_msg_); // Load reference path data into the message
 }
 
 void Roadmap::Poll(const ros::TimerEvent &event)
@@ -68,9 +67,9 @@ void Roadmap::Poll(const ros::TimerEvent &event)
     runs_++;
     // if (runs_ < 10)
     // {
-        // Should happen by request?
-        map_pub_.publish(road_msg_);      // publish
-        reference_pub_.publish(ref_msg_); // publish
+    // Should happen by request?
+    map_pub_.publish(road_msg_);      // publish
+    reference_pub_.publish(ref_msg_); // publish
     // }
     ROADMAP_INFO("Published polylines and reference");
     // Visualize the map

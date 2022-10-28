@@ -310,9 +310,9 @@ void SplineConverter::ConvertWaypointsToVectors(const std::vector<Waypoint> &way
     ROADMAP_INFO("Generating spline without clothoid interpolation");
     assert(waypoints.size() > 1);
 
-    double length = 0;
+    double length = 0.;
+    double added_length = 0.;
     double L;
-    int j = 0;
 
     s.push_back(0);
     x.push_back(waypoints[0].x);
@@ -320,14 +320,16 @@ void SplineConverter::ConvertWaypointsToVectors(const std::vector<Waypoint> &way
 
     for (size_t i = 1; i < waypoints.size(); i++)
     {
-        // Compute the distance between points
-        L = std::sqrt(std::pow(waypoints[i].x - waypoints[j].x, 2) + std::pow(waypoints[i].y - waypoints[j].y, 2));
+        // Compute the distance between the current waypoint and the last used waypoint
+        L = std::sqrt(std::pow(waypoints[i].x - waypoints[i - 1].x, 2.) + std::pow(waypoints[i].y - waypoints[i - 1].y, 2.));
+
+        added_length += L;
+        length += L;
 
         // If the distance is sufficiently large, add the waypoint
-        if (L > config_->minimum_waypoint_distance_)
+        if (added_length > config_->minimum_waypoint_distance_)
         {
-            j = i;
-            length += L;
+            added_length = 0.;
             x.push_back(waypoints[i].x);
             y.push_back(waypoints[i].y);
             s.push_back(length);
@@ -354,10 +356,9 @@ void SplineConverter::FitCubicSpline(Lane &lane, std::vector<Waypoint> &waypoint
     assert(lane.spline_fit);
     double length = lane.length;
 
-    double spline_sample_dist = std::min(config_->spline_sample_distance_, length);
-    int n_spline_pts = ceil(length / spline_sample_dist);
+    double spline_sample_dist = std::min(config_->spline_sample_distance_, length); // length = 70
+    int n_spline_pts = ceil(length / spline_sample_dist);                           // 70  / 10 = 7
     waypoints_out.resize(n_spline_pts);
-
     double s_cur = 0;
     for (int i = 0; i < n_spline_pts; i++)
     {
