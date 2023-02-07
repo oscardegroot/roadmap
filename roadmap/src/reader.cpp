@@ -50,12 +50,17 @@ void Reader::ReadXML(const std::string &file)
     {
         // Create a new way and add its nodes (nodes with ref attribute)
         Way new_way;
+        double angle = Helpers::quaternionToAngle(offset_);
+        Eigen::MatrixXd R = Helpers::rotationMatrixFromHeading(-angle);
+
         for (rapidxml::xml_node<> *node = way->first_node("nd"); node; node = node->next_sibling("nd"))
         {
+                    Eigen::Vector2d new_pos = R * Eigen::Vector2d(atof(node->first_attribute("x")->value()), atof(node->first_attribute("y")->value()));
+
             // int id = atoi(node->first_attribute("ref")->value());
-            new_way.AddNode(Node(offset_.position.x + atof(node->first_attribute("x")->value()),
-                                 offset_.position.y + atof(node->first_attribute("y")->value()),
-                                 atof(node->first_attribute("theta")->value())));
+            new_way.AddNode(Node(offset_.position.x + new_pos(0),
+                                 offset_.position.y + new_pos(1),
+                                 atof(node->first_attribute("theta")->value()) + angle));
         }
 
         for (rapidxml::xml_node<> *lane = way->first_node("lane"); lane; lane = lane->next_sibling("lane"))
@@ -96,9 +101,15 @@ void Reader::ReadYAML(const std::string &file)
 
     // Create a way object
     Way new_way;
-    for (size_t i = 0; i < x.size(); i++)
-        new_way.AddNode(Node(offset_.position.x + x[i], offset_.position.y + y[i], theta[i])); // Create nodes
+    double angle = Helpers::quaternionToAngle(offset_);
+    Eigen::MatrixXd R = Helpers::rotationMatrixFromHeading(-angle); // Rotate to the offset
 
+    for (size_t i = 0; i < x.size(); i++)
+    {
+        Eigen::Vector2d new_pos = R * Eigen::Vector2d(x[i], y[i]);
+
+        new_way.AddNode(Node(offset_.position.x + new_pos(0), offset_.position.y + new_pos(1), theta[i] + angle)); // Create nodes
+    }
     int id = 0;
     // Add a regular road and sidewalk by default
     new_way.AddLane("road", 4.0, true, id);
