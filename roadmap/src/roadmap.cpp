@@ -72,6 +72,7 @@ void Roadmap::Poll(const ros::TimerEvent &event)
 
     // }
     map_pub_.publish(road_msg_); // publish
+    reference_pub_.publish(ref_msg_); // publish
 
     // Visualize the map
     // Two functions here

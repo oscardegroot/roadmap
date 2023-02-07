@@ -3,3 +3,8 @@ docs/sphinx/
 *.osm
 .vscode/c_cpp_properties.json
 .vscode/settings.json
+roadmap/.vscode/c_cpp_properties.json
+roadmap/.vscode/settings.json
+roadmap/.vscode/launch.json
+roadmap/.vscode/tasks.json
+roadmap/.vscode/
