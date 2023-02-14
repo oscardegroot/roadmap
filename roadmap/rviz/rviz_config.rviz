@@ -52,13 +52,13 @@ Visualization Manager:
       Reference Frame: <Fixed Frame>
       Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /roadmap/input_map
       Name: Input Map
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /roadmap/output_map
@@ -162,7 +162,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 94.02587890625
+      Distance: 104.27996063232422
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -178,9 +178,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6997969746589661
+      Pitch: 0.8997967839241028
       Target Frame: <Fixed Frame>
-      Yaw: 4.183175563812256
+      Yaw: 4.2681779861450195
     Saved: ~
 Window Geometry:
   Displays:
