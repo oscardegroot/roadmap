@@ -10,6 +10,7 @@ Roadmap::Roadmap()
 
     // Subscribers
     waypoints_sub_ = nh_.subscribe(config_->external_waypoint_topic_, 1, &Roadmap::WaypointCallback, this); // Subscriber for waypoints (forwarded to the reader)
+    reset_sub_ = nh_.subscribe("/lmpcc/reset_environment", 1, &Roadmap::ResetCallback, this);
 
     // Debug: listens to rviz point for translating the map
     offset_sub_ = nh_.subscribe("roadmap/offset", 1, &Roadmap::OffsetCallback, this); // Subscriber for waypoints (forwarded to the reader)
@@ -50,6 +51,22 @@ void Roadmap::OffsetCallback(const geometry_msgs::PoseWithCovarianceStamped &msg
 {
     reader_->OffsetCallback(msg);
     ReadFromFile();
+}
+
+void Roadmap::ResetCallback(const std_msgs::Empty &msg)
+{
+    // Initialize the configuration
+    config_.reset(new RoadmapConfig());
+    config_->initialize();
+
+    reader_.reset(new Reader(config_.get()));
+
+    // Then convert the read waypoints to splines
+    spline_converter_.Initialize(nh_, config_.get());
+
+    ReadFromFile();
+
+    ROADMAP_WARN("Roadmap reset completed");
 }
 
 void Roadmap::ConvertMap()

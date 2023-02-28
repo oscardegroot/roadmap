@@ -32,6 +32,8 @@ public:
 
     void OffsetCallback(const geometry_msgs::PoseWithCovarianceStamped &msg);
 
+    void ResetCallback(const std_msgs::Empty &msg);
+
 private:
     ros::NodeHandle nh_;
 
@@ -42,6 +44,7 @@ private:
 
     ros::Subscriber waypoints_sub_; /** Subscriber for external waypoints */
     ros::Subscriber offset_sub_; /** Subscriber for external waypoints */
+    ros::Subscriber reset_sub_; /** Subscriber for resetting the map */
     ros::Publisher map_pub_;        /** Publisher for road polyline output */
     ros::Publisher reference_pub_;  /** Publisher for road polyline output */
 
@@ -66,6 +69,11 @@ private:
      * @brief Convert the map and create ros messages
      */
     void ConvertMap();
+
+    // /**
+    //  * @brief Reset to load and apply changed map
+    //  */
+    // void Reset();
 };
 
 
