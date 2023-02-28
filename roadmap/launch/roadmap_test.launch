@@ -1,9 +1,8 @@
 <?xml version="1.0"?>
 <launch>
 
-    <rosparam command="load" file="$(find roadmap)/config/settings.yaml"/>
-    <node pkg="roadmap" type="roadmap_node" name="roadmap_node" respawn="false" output="screen"/>
-
+    <arg name="map" default="simple_circle_radius_60"/>
+    <include file="$(find roadmap)/launch/roadmap.launch"/>
     <node pkg="rviz" type="rviz" name="rviz" required="True" args="-d $(find roadmap)/rviz/rviz_config.rviz" output="log"/>
 
 </launch>  

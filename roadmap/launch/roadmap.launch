@@ -1,7 +1,11 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="map" default="" />
+    <arg name="overwrite_map" default="false" />
 
     <rosparam command="load" file="$(find roadmap)/config/settings.yaml"/>
-    <node pkg="roadmap" type="roadmap_node" name="roadmap_node" respawn="false" output="screen"/>
+    
+    <param name="roadmap/map_file_name" value="maps/$(arg map).xml" if="$(arg overwrite_map)"/>    
 
+    <node pkg="roadmap" type="roadmap_node" name="roadmap_node" respawn="false" output="screen"/>
 </launch>  

@@ -4,7 +4,7 @@ roadmap:
   update_frequency: 1  # (Hz) Publish map information at this rate
   map_package_name: 'roadmap'         # Package where the map is
   # map_file_name: 'maps/test_map.xml'  # Name of the map file
-  map_file_name: 'maps/simple_circle_radius_40.xml'  # Name of the map file
+  map_file_name: 'maps/test_map.xml'  # Name of the map file
   # map_file_name: "maps/test_map.yaml"
   # map_file_name: 'maps/test_map.osm'
 

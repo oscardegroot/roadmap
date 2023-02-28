@@ -19,10 +19,10 @@ uint8 CROSSWALK=18
 uint8 SPEEDBUMP=19 
 -->
 <way>
-  <nd x="-10" y="0" theta="12.566"/>
-  <nd x="10" y="0" theta="12.566"/>
-  <!-- <nd x="30" y="0" theta="0"/>
-  <nd x="40" y="0" theta="0"/> -->
+  <nd x="-10" y="0" theta="0"/>
+  <nd x="10" y="0" theta="0"/>
+  <nd x="30" y="0" theta="0"/>
+  <nd x="40" y="0" theta="0"/>
   <!-- <nd x="50" y="10" theta="1.5708"/> 
   <nd x="50" y="30" theta="1.5708"/>
   <nd x="50" y="100" theta="1.5708"/> -->
