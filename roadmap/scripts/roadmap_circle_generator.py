@@ -4,12 +4,12 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 plot_roadmap = True
-write_to_maps = False
+write_to_maps = True
 
 turnarounds = 1
 nodes_per_turnaround = 20
 theta_intervals = 2*np.pi / nodes_per_turnaround
-radius_circle = 55
+radius_circle = 45
 
 spline_length = turnarounds * np.pi*2
 
