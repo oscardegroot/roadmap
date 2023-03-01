@@ -4,20 +4,20 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 plot_roadmap = True
-write_to_maps = True
+write_to_maps = False
 
 turnarounds = 1
 nodes_per_turnaround = 20
-phi_intervals = 2*np.pi / nodes_per_turnaround
-radius_circle = 60
+theta_intervals = 2*np.pi / nodes_per_turnaround
+radius_circle = 55
 
 spline_length = turnarounds * np.pi*2
 
-distance_on_spline = np.arange(0, spline_length, phi_intervals)
+distance_on_spline = np.arange(0, spline_length, theta_intervals)
 
 x_coordinates = np.sin(distance_on_spline)*radius_circle
 y_coordinates = np.cos(distance_on_spline)*radius_circle-radius_circle
-phi_coordinates = -distance_on_spline - np.pi/2
+theta_coordinates = -distance_on_spline - np.pi/2
 
 file_content = """\
 <?xml version="1.0" encoding="UTF-8"?>
@@ -45,22 +45,23 @@ uint8 SPEEDBUMP=19
 
 if plot_roadmap:
     roadmap_plot = plt.plot(x_coordinates,y_coordinates, 'b')
+    roadmap_plot = plt.grid()
 
-for index, (x, y, theta) in enumerate(zip(x_coordinates,y_coordinates,phi_coordinates)):
+for index, (x, y, theta) in enumerate(zip(x_coordinates,y_coordinates,theta_coordinates)):
+
+    file_content += f'\n  <nd x="{x}" y="{y}" theta="{theta+np.pi/2}"/>'
+
     if plot_roadmap:
         if index == 0:
             roadmap_plot = plt.plot(x, y, 'g', marker=(2, 0, theta*180/np.pi), markersize=10, linestyle='None')
             roadmap_plot = plt.plot(x, y, 'g', marker=(3, 0, theta*180/np.pi), markersize=10, linestyle='None')
-        elif index == len(phi_coordinates)-1: 
+        elif index == len(theta_coordinates)-1: 
             roadmap_plot = plt.plot(x, y, 'r', marker=(2, 0, theta*180/np.pi), markersize=10, linestyle='None')
             roadmap_plot = plt.plot(x, y, 'r', marker=(3, 0, theta*180/np.pi), markersize=10, linestyle='None')
         else:
             roadmap_plot = plt.plot(x, y, 'b', marker=(2, 0, theta*180/np.pi), markersize=10, linestyle='None')
             roadmap_plot = plt.plot(x, y, 'b', marker=(3, 0, theta*180/np.pi), markersize=10, linestyle='None')
-        # print(theta)
-
-    file_content += f'\n  <nd x="{x}" y="{y}" theta="{theta+np.pi/2}"/>'
-
+        
 file_content += """
   <lane type="road" width="4.0" two_way="0"/>
 </way>
