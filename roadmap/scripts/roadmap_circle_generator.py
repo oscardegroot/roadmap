@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 plot_roadmap = True
-write_to_maps = True
+write_to_maps = False
 
 turnarounds = 1
 nodes_per_turnaround = 20
@@ -53,14 +53,12 @@ for index, (x, y, theta) in enumerate(zip(x_coordinates,y_coordinates,theta_coor
 
     if plot_roadmap:
         if index == 0:
-            roadmap_plot = plt.plot(x, y, 'g', marker=(2, 0, theta*180/np.pi), markersize=10, linestyle='None')
-            roadmap_plot = plt.plot(x, y, 'g', marker=(3, 0, theta*180/np.pi), markersize=10, linestyle='None')
+            color = 'g'
         elif index == len(theta_coordinates)-1: 
-            roadmap_plot = plt.plot(x, y, 'r', marker=(2, 0, theta*180/np.pi), markersize=10, linestyle='None')
-            roadmap_plot = plt.plot(x, y, 'r', marker=(3, 0, theta*180/np.pi), markersize=10, linestyle='None')
+            color = 'r'
         else:
-            roadmap_plot = plt.plot(x, y, 'b', marker=(2, 0, theta*180/np.pi), markersize=10, linestyle='None')
-            roadmap_plot = plt.plot(x, y, 'b', marker=(3, 0, theta*180/np.pi), markersize=10, linestyle='None')
+            color = 'b'
+        roadmap_plot = plt.plot(x, y, color, marker=(3, 0, theta*180/np.pi), markersize=10, linestyle='None')
         
 file_content += """
   <lane type="road" width="4.0" two_way="0"/>
