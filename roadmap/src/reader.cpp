@@ -61,7 +61,6 @@ void Reader::ReadXML(const std::string &file)
             new_way.AddNode(Node(offset_.position.x + new_pos(0),
                                  offset_.position.y + new_pos(1),
                                  atof(node->first_attribute("theta")->value()) + angle));
-            std::cout << node->first_attribute("theta")->value() << std::endl;
         }
 
         for (rapidxml::xml_node<> *lane = way->first_node("lane"); lane; lane = lane->next_sibling("lane"))
