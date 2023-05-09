@@ -21,7 +21,7 @@ void Reader::Read(const std::string &file_name)
     else
         map_file = file_name;
 
-	ROADMAP_INFO_STREAM("\tFile: " << map_file);
+    ROADMAP_INFO_STREAM("\tFile: " << map_file);
 
     // Read the file with the correct file extension
     if (map_file.substr(map_file.find_last_of(".") + 1) == "xml")
@@ -50,17 +50,18 @@ void Reader::ReadXML(const std::string &file)
     {
         // Create a new way and add its nodes (nodes with ref attribute)
         Way new_way;
-        double angle = Helpers::quaternionToAngle(offset_);
-        Eigen::MatrixXd R = Helpers::rotationMatrixFromHeading(-angle);
+        double angle = RosTools::quaternionToAngle(offset_);
+        Eigen::MatrixXd R = RosTools::rotationMatrixFromHeading(-angle);
 
         for (rapidxml::xml_node<> *node = way->first_node("nd"); node; node = node->next_sibling("nd"))
         {
-                    Eigen::Vector2d new_pos = R * Eigen::Vector2d(atof(node->first_attribute("x")->value()), atof(node->first_attribute("y")->value()));
+            Eigen::Vector2d new_pos = R * Eigen::Vector2d(atof(node->first_attribute("x")->value()), atof(node->first_attribute("y")->value()));
 
             // int id = atoi(node->first_attribute("ref")->value());
             new_way.AddNode(Node(offset_.position.x + new_pos(0),
                                  offset_.position.y + new_pos(1),
                                  atof(node->first_attribute("theta")->value()) + angle));
+            std::cout << node->first_attribute("theta")->value() << std::endl;
         }
 
         for (rapidxml::xml_node<> *lane = way->first_node("lane"); lane; lane = lane->next_sibling("lane"))
@@ -101,8 +102,8 @@ void Reader::ReadYAML(const std::string &file)
 
     // Create a way object
     Way new_way;
-    double angle = Helpers::quaternionToAngle(offset_);
-    Eigen::MatrixXd R = Helpers::rotationMatrixFromHeading(-angle); // Rotate to the offset
+    double angle = RosTools::quaternionToAngle(offset_);
+    Eigen::MatrixXd R = RosTools::rotationMatrixFromHeading(-angle); // Rotate to the offset
 
     for (size_t i = 0; i < x.size(); i++)
     {
@@ -235,7 +236,7 @@ void Reader::WaypointCallback(const nav_msgs::Path &msg)
     {
         new_way.AddNode(Node(msg.poses[i].pose.position.x,
                              msg.poses[i].pose.position.y,
-                             Helpers::quaternionToAngle(msg.poses[i].pose)));
+                             RosTools::quaternionToAngle(msg.poses[i].pose)));
     }
 
     int id = 0;
@@ -247,7 +248,7 @@ void Reader::WaypointCallback(const nav_msgs::Path &msg)
     ROADMAP_INFO("Waypoints Saved.");
 }
 
-void Reader::OffsetCallback(const geometry_msgs::PoseWithCovarianceStamped &msg) 
+void Reader::OffsetCallback(const geometry_msgs::PoseWithCovarianceStamped &msg)
 {
     offset_ = msg.pose.pose;
 }

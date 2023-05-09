@@ -7,7 +7,7 @@
 #include <map>
 #include <Eigen/Eigen>
 
-#include <lmpcc_tools/ros_visuals.h>
+#include <ros_tools/ros_visuals.h>
 
 // spline libraries
 #include <spline.h>
@@ -17,7 +17,7 @@
 #include "types.h"
 #include "helpers.h"
 
-//Whens earching for the closest point on the path, this variable indicates the distance that the algorithm searches behind the current spline point.
+// Whens earching for the closest point on the path, this variable indicates the distance that the algorithm searches behind the current spline point.
 #define MAX_STEP_BACK_TOLERANCE 0.1f
 
 /** Struct for a waypoint with distance */
@@ -59,7 +59,7 @@ public:
 
     /**
      * @brief Visualize a map
-     * 
+     *
      * @param map the map object
      * @param converted_map is this an output map? Will change the topic and style of visualizations.
      */
@@ -71,9 +71,9 @@ private:
     RoadmapConfig *config_; /** parameters */
 
     /** Two classes for visualization of the map */
-    std::unique_ptr<ROSMarkerPublisher> input_map_markers_;
-    std::unique_ptr<ROSMarkerPublisher> output_map_markers_;
-    std::unique_ptr<ROSMarkerPublisher> arrow_markers_;
+    std::unique_ptr<RosTools::ROSMarkerPublisher> input_map_markers_;
+    std::unique_ptr<RosTools::ROSMarkerPublisher> output_map_markers_;
+    std::unique_ptr<RosTools::ROSMarkerPublisher> arrow_markers_;
 
     /**
      * @brief Fit a spline to a particular lane
@@ -86,7 +86,7 @@ private:
 
     /**
      * @brief Convert a set of input waypoints to the format for fitting the cubic spline
-     * 
+     *
      * @param waypoints the input waypoints
      * @param x output x vector
      * @param y output y vector
@@ -96,7 +96,7 @@ private:
 
     /**
      * @brief Fit a Clothoid over the given waypoints
-     * 
+     *
      * @param waypoints the input waypoints
      * @param x output x vector
      * @param y output y vector
@@ -106,7 +106,7 @@ private:
 
     /**
      * @brief Fit a cubic spline over a set of waypoints (x, y, s)
-     * 
+     *
      * @param lane The lane object that contains the spline
      * @param waypoints_out waypoints sampled over the fitted spline
      */
@@ -114,7 +114,7 @@ private:
 
     /**
      * @brief Visualize the spline fitted over a lane
-     * 
+     *
      * @param lane the lane to visualize
      */
     void VisualizeLaneSpline(const Lane &lane);

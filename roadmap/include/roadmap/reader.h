@@ -16,15 +16,15 @@
 
 #include "types.h"
 #include "configuration.h"
-#include "lmpcc_tools/helpers.h"
+#include "ros_tools/helpers.h"
 
 class Reader
 {
 
     /**
- * @brief Class for reading map files and converting it into necessary formats
- * @see types.h
- */
+     * @brief Class for reading map files and converting it into necessary formats
+     * @see types.h
+     */
 public:
     Reader(RoadmapConfig *config)
         : config_(config)
@@ -34,12 +34,16 @@ public:
         offset_.position.x = 0.;
         offset_.position.y = 0.;
 
+        offset_.orientation.x = 0.;
+        offset_.orientation.y = 0.;
+        offset_.orientation.z = 0.;
+        offset_.orientation.w = 1.;
     }
 
 public:
     /**
      * @brief Read a map file
-     * 
+     *
      * @param file_name file name relative to roadmap package (either xml or yaml files)
      */
     void Read(const std::string &file_name); // With custom name
@@ -63,14 +67,14 @@ public:
 
     /**
      * @brief Callback for external waypoints instead of reading a file
-     * 
+     *
      * @param msg the reference as a nav_msgs::Path
      */
     void WaypointCallback(const nav_msgs::Path &msg);
 
     /**
      * @brief Debug callback for translating the map with a Pose
-     * 
+     *
      * @param msg Translation
      */
     void OffsetCallback(const geometry_msgs::PoseWithCovarianceStamped &msg);
@@ -85,26 +89,24 @@ private:
 
     /**
      * @brief Read an XML file with map data
-     * 
+     *
      * @param file the file path to read from
      */
     void ReadXML(const std::string &file);
 
     /**
-     * @brief Read a yaml file with map data 
-     * 
+     * @brief Read a yaml file with map data
+     *
      * @param file the file path to read from
      */
     void ReadYAML(const std::string &file);
 
     /**
      * @brief Read an OSM file with map data
-     * 
+     *
      * @param doc file to read from
      */
     void ReadOSM(const std::string &file);
 };
-
-
 
 #endif // __READER_H__

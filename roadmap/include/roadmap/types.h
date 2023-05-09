@@ -9,7 +9,7 @@
 #include "geometry_msgs/Pose.h"
 
 #include "spline.h"
-#include "lmpcc_tools/helpers.h"
+#include "ros_tools/helpers.h"
 
 // Radius of Earth
 #define GLOBE_RADIUS 6371.0e3
@@ -274,7 +274,7 @@ struct Map
                         pose_msg.pose.position.x = node.x;
                         pose_msg.pose.position.y = node.y;
 
-                        pose_msg.pose.orientation = Helpers::angleToQuaternion(node.theta);
+                        pose_msg.pose.orientation = RosTools::angleToQuaternion(node.theta);
 
                         msg.poses.push_back(pose_msg);
                     }

@@ -62,7 +62,7 @@
   <depend>roslib</depend>
   <depend>asr_rapidxml</depend>
   <depend>roadmap_msgs</depend>
-  <depend>lmpcc_tools</depend>
+  <depend>ros_tools</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

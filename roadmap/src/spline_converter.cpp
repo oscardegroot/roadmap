@@ -2,9 +2,9 @@
 
 void SplineConverter::Initialize(ros::NodeHandle &nh, RoadmapConfig *config)
 {
-    input_map_markers_.reset(new ROSMarkerPublisher(nh, "roadmap/input_map", "map", 500));
-    output_map_markers_.reset(new ROSMarkerPublisher(nh, "roadmap/output_map", "map", 2000));
-    arrow_markers_.reset(new ROSMarkerPublisher(nh, "roadmap/output_map_arrows", "map", 2000));
+    input_map_markers_.reset(new RosTools::ROSMarkerPublisher(nh, "roadmap/input_map", "map", 500));
+    output_map_markers_.reset(new RosTools::ROSMarkerPublisher(nh, "roadmap/output_map", "map", 2000));
+    arrow_markers_.reset(new RosTools::ROSMarkerPublisher(nh, "roadmap/output_map_arrows", "map", 2000));
 
     config_ = config;
 
@@ -57,7 +57,7 @@ void SplineConverter::VisualizeMap()
     bool plot_arrows = false;
     bool plot_cubes = true;
 
-    ROSPointMarker &arrow = arrow_markers_->getNewPointMarker("ARROW"); // Note: is expensive to DRAW, only show when debugging.
+    RosTools::ROSPointMarker &arrow = arrow_markers_->getNewPointMarker("ARROW"); // Note: is expensive to DRAW, only show when debugging.
 
     double scale = 0.2 * config_->scale_;
 
@@ -70,7 +70,7 @@ void SplineConverter::VisualizeMap()
             if (lane.type == roadmap_msgs::RoadPolyline::LANECENTER_FREEWAY)
                 continue;
 
-            ROSMultiplePointMarker &cube = output_map_markers_->getNewMultiplePointMarker("CUBE"); // Batch rendering (same color and scale)
+            RosTools::ROSMultiplePointMarker &cube = output_map_markers_->getNewMultiplePointMarker("CUBE"); // Batch rendering (same color and scale)
 
             if (plot_cubes)
                 cube.setScale(scale, scale, scale);
@@ -79,7 +79,7 @@ void SplineConverter::VisualizeMap()
             for (const Node &node : lane.nodes)
             {
                 if (plot_cubes)
-                    cube.setColorInt(lane.type, 20, Colormap::VIRIDIS);
+                    cube.setColorInt(lane.type, 20, RosTools::Colormap::VIRIDIS);
 
                 if (prev_node && plot_arrows)
                 {
@@ -124,7 +124,7 @@ void SplineConverter::VisualizeInputData(Map &map)
 {
     ROADMAP_INFO("Visualizing input data");
 
-    ROSPointMarker &unique_cubes = input_map_markers_->getNewPointMarker("CUBE"); // Unique per color
+    RosTools::ROSPointMarker &unique_cubes = input_map_markers_->getNewPointMarker("CUBE"); // Unique per color
 
     double scale;
 
@@ -134,7 +134,7 @@ void SplineConverter::VisualizeInputData(Map &map)
         {
             const Lane &lane = way.lanes[i];
 
-            ROSMultiplePointMarker &cube = input_map_markers_->getNewMultiplePointMarker("CUBE"); // Batch rendering (same color and scale)
+            RosTools::ROSMultiplePointMarker &cube = input_map_markers_->getNewMultiplePointMarker("CUBE"); // Batch rendering (same color and scale)
 
             bool is_first_node = true;
             for (const Node &node : lane.nodes)
@@ -177,9 +177,9 @@ void SplineConverter::VisualizeInputData(Map &map)
 
 void SplineConverter::VisualizeLaneSpline(const Lane &lane)
 {
-    ROSLine &line = output_map_markers_->getNewLine();
-    line.setColorInt(lane.type, 20, Colormap::VIRIDIS); //(double)lane.type / (double)20);
-                                                        // line.setColor(0.5, 0.0, 0.0);
+    RosTools::ROSLine &line = output_map_markers_->getNewLine();
+    line.setColorInt(lane.type, 20, RosTools::Colormap::VIRIDIS); //(double)lane.type / (double)20);
+                                                                  // line.setColor(0.5, 0.0, 0.0);
 
     line.setScale(0.1);
     line.setOrientation(0.0);
@@ -227,7 +227,7 @@ void SplineConverter::FitSplineOnLane(Lane &lane)
     // Modify the way object
     lane.nodes.clear();
     for (Waypoint &waypoint : spline_waypoints)
-        lane.nodes.push_back(Node(waypoint.x, waypoint.y, 0.0));
+        lane.nodes.push_back(Node(waypoint.x, waypoint.y, waypoint.theta));
 }
 
 void SplineConverter::FitSplineOnWaypoints(const std::vector<Waypoint> &waypoints, std::vector<Waypoint> &waypoints_out, Lane &lane)
@@ -365,6 +365,7 @@ void SplineConverter::FitCubicSpline(Lane &lane, std::vector<Waypoint> &waypoint
         waypoints_out[i].s = s_cur;
         waypoints_out[i].x = lane.spline_x(s_cur);
         waypoints_out[i].y = lane.spline_y(s_cur);
+        waypoints_out[i].theta = std::atan2(lane.spline_y.deriv(1, s_cur), lane.spline_x.deriv(1, s_cur));
 
         s_cur += spline_sample_dist;
     }
@@ -375,9 +376,9 @@ void SplineConverter::FitCubicSpline(Lane &lane, std::vector<Waypoint> &waypoint
     {
         // Add a final waypoint
         waypoints_out.emplace_back(
-            lane.spline_x.m_y_.back(),
+            lane.spline_x.m_x_.back(),
             lane.spline_y.m_y_.back(),
-            lane.spline_x.m_x_.back());
+            waypoints_out.back().theta);
     }
 
     ROADMAP_INFO("Cubic Spline Fitted");

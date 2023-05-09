@@ -82,7 +82,7 @@ An example callback is given below::
 
 	    for (size_t i = 0; i < msg.poses.size(); i += 2)
 	    {
-	        theta_.push_back(Helpers::quaternionToAngle(msg.poses[i].pose));
+	        theta_.push_back(RosTools::quaternionToAngle(msg.poses[i].pose));
 	        x_.push_back(msg.poses[i].pose.position.x);
 	        y_.push_back(msg.poses[i].pose.position.y);
 

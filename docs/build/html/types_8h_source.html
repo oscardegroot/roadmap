@@ -286,7 +286,7 @@ $(function() {
 <div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span>                        pose_msg.pose.position.x = node.<a class="code hl_variable" href="structNode.html#a1082fca4b71cc3cc02d78c35108f9059">x</a>;</div>
 <div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>                        pose_msg.pose.position.y = node.<a class="code hl_variable" href="structNode.html#a441d3c5ba86597f4c391408d9fe6d242">y</a>;</div>
 <div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span> </div>
-<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span>                        pose_msg.pose.orientation = Helpers::angleToQuaternion(node.<a class="code hl_variable" href="structNode.html#a103f368f7309560e09b69400b162057f">theta</a>);</div>
+<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span>                        pose_msg.pose.orientation = RosTools::angleToQuaternion(node.<a class="code hl_variable" href="structNode.html#a103f368f7309560e09b69400b162057f">theta</a>);</div>
 <div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span> </div>
 <div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span>                        msg.poses.push_back(pose_msg);</div>
 <div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>                    }</div>
