@@ -20,9 +20,21 @@ uint8 SPEEDBUMP=19
 -->
 <way>
   <nd x="-10" y="0" theta="0"/>
+  <nd x="0" y="0" theta="0"/>
   <nd x="10" y="0" theta="0"/>
   <nd x="30" y="0" theta="0"/>
   <nd x="40" y="0" theta="0"/>
+  <nd x="50" y="0" theta="0"/>
+  <nd x="60" y="0" theta="0"/>
+  <nd x="70" y="0" theta="0"/>
+  <nd x="80" y="0" theta="0"/>
+  <nd x="90" y="0" theta="0"/>
+  <nd x="100" y="0" theta="0"/>
+  <!-- <nd x="110" y="0" theta="0"/>
+  <nd x="120" y="0" theta="0"/>
+  <nd x="130" y="0" theta="0"/>
+  <nd x="140" y="0" theta="0"/>
+  <nd x="150" y="0" theta="0"/> -->
   <!-- <nd x="50" y="10" theta="1.5708"/> 
   <nd x="50" y="30" theta="1.5708"/>
   <nd x="50" y="100" theta="1.5708"/> -->
