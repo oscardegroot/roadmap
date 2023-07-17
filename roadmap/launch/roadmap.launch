@@ -2,8 +2,9 @@
 <launch>
     <arg name="map" default="" />
     <arg name="overwrite_map" default="false" />
+    <arg name="config_file" default="$(find roadmap)/config/settings.yaml" />
 
-    <rosparam command="load" file="$(find roadmap)/config/settings.yaml"/>
+    <rosparam command="load" file="$(arg config_file)"/>
     
     <param name="roadmap/map_file_name" value="$(arg map)" if="$(arg overwrite_map)"/>    
 
