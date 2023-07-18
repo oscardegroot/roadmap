@@ -8,7 +8,7 @@
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/Pose.h"
 
-#include "spline.h"
+#include <spline/spline.h>
 #include "ros_tools/helpers.h"
 
 // Radius of Earth
@@ -79,6 +79,14 @@ struct Lane
         }
     }
 
+    void Reverse()
+    {
+        std::reverse(nodes.begin(), nodes.end());
+
+        for (size_t n = 0; n < nodes.size(); n++)
+            nodes[n].theta += M_PI; // Reverse the direction
+    }
+
     /**
      * @brief Aassign a spline to this lane
      */
@@ -104,6 +112,17 @@ struct Way
     {
         plus_offset = 0.;
         minus_offset = 0.;
+    }
+
+    void Reverse()
+    {
+
+        std::reverse(nodes.begin(), nodes.end());
+        for (size_t n = 0; n < nodes.size(); n++)
+            nodes[n].theta += M_PI;
+
+        for (size_t l = 0; l < lanes.size(); l++)
+            lanes[l].Reverse();
     }
 
     /**
@@ -186,9 +205,6 @@ struct Way
 
 /**
  * @brief Struct to define the map.
- *
- * Just contains a vector of ways for now
- *
  */
 struct Map
 {
@@ -198,13 +214,18 @@ struct Map
     {
     }
 
-    /**
-     * @brief Clear the map
-     *
-     */
-    void Clear()
+    /**  @brief Clear the map  */
+    void Clear() { ways.clear(); }
+
+    /** @brief Reverse the direction of the reference path */
+    void Reverse()
     {
-        ways.clear();
+        for (size_t w = 0; w < ways.size(); w++)
+        {
+            // std::cout << ways[w].nodes.back().y << std::endl;
+            ways[w].Reverse();
+            // std::cout << ways[w].nodes.back().y << std::endl;
+        }
     }
 
     /**

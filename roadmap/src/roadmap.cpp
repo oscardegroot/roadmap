@@ -11,6 +11,7 @@ Roadmap::Roadmap()
     // Subscribers
     waypoints_sub_ = nh_.subscribe(config_->external_waypoint_topic_, 1, &Roadmap::WaypointCallback, this); // Subscriber for waypoints (forwarded to the reader)
     reset_sub_ = nh_.subscribe("/lmpcc/reset_environment", 1, &Roadmap::ResetCallback, this);
+    reverse_sub_ = nh_.subscribe("/roadmap/reverse", 1, &Roadmap::ReverseCallback, this);
 
     // Debug: listens to rviz point for translating the map
     offset_sub_ = nh_.subscribe("roadmap/offset", 1, &Roadmap::OffsetCallback, this); // Subscriber for waypoints (forwarded to the reader)
@@ -18,14 +19,16 @@ Roadmap::Roadmap()
     // Publishers
     map_pub_ = nh_.advertise<roadmap_msgs::RoadPolylineArray>("roadmap/road_polylines", 1);
     reference_pub_ = nh_.advertise<nav_msgs::Path>("roadmap/reference", 1);
+    goal_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("/roadmap/goal", 1);
 
     // Then convert the read waypoints to splines
     spline_converter_.Initialize(nh_, config_.get());
 
     ReadFromFile();
 
-    timer_ = nh_.createTimer(ros::Duration(1.0 / config_->update_frequency_), &Roadmap::Poll, this);
+    is_reversed_ = false;
 
+    timer_ = nh_.createTimer(ros::Duration(1.0 / config_->update_frequency_), &Roadmap::Poll, this);
     ROADMAP_WARN("Initialization completed");
 }
 
@@ -53,20 +56,51 @@ void Roadmap::OffsetCallback(const geometry_msgs::PoseWithCovarianceStamped &msg
     ReadFromFile();
 }
 
-void Roadmap::ResetCallback(const std_msgs::Empty &msg)
+void Roadmap::ReverseCallback(const std_msgs::Empty &msg)
 {
-    // Initialize the configuration
+
+    is_reversed_ = !is_reversed_;
+
     config_.reset(new RoadmapConfig());
     config_->initialize();
 
     reader_.reset(new Reader(config_.get()));
 
     // Then convert the read waypoints to splines
+    spline_converter_ = SplineConverter();
     spline_converter_.Initialize(nh_, config_.get());
 
-    ReadFromFile();
+    reader_->Read();
 
-    ROADMAP_WARN("Roadmap reset completed");
+    if (is_reversed_)
+        reader_->GetMap().Reverse(); // Reverse the map
+
+    ConvertMap();
+
+    geometry_msgs::PoseStamped pose_msg;
+    pose_msg.pose.position.x = spline_converter_.converted_map_.ways[0].nodes.back().x;
+    pose_msg.pose.position.y = spline_converter_.converted_map_.ways[0].nodes.back().y;
+    pose_msg.header.stamp = ros::Time::now();
+    pose_msg.header.frame_id = "map";
+    goal_pub_.publish(pose_msg);
+
+    ROADMAP_INFO("Roadmap reverse completed");
+}
+
+void Roadmap::ResetCallback(const std_msgs::Empty &msg)
+{
+    /* // Initialize the configuration
+     config_.reset(new RoadmapConfig());
+     config_->initialize();
+
+     reader_.reset(new Reader(config_.get()));
+
+     // Then convert the read waypoints to splines
+     spline_converter_.Initialize(nh_, config_.get());
+
+     ReadFromFile();
+
+     ROADMAP_WARN("Roadmap reset completed");*/
 }
 
 void Roadmap::ConvertMap()
@@ -88,6 +122,7 @@ void Roadmap::Poll(const ros::TimerEvent &event)
     // Should happen by request?
     map_pub_.publish(road_msg_);      // publish
     reference_pub_.publish(ref_msg_); // publish
+
     // }
     ROADMAP_INFO("Published polylines and reference");
     // Visualize the map

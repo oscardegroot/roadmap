@@ -5,6 +5,7 @@
 #include <ros/console.h>
 #include <string>
 
+#include <geometry_msgs/PoseStamped.h>
 #include "roadmap_msgs/RoadPolylineArray.h"
 #include "roadmap_msgs/RoadPolyline.h"
 
@@ -17,7 +18,7 @@ class Roadmap
 
     /**
      * @brief Main class for the roadmap node
-     * 
+     *
      */
 public:
     Roadmap();
@@ -25,7 +26,7 @@ public:
 public:
     /**
      * @brief Callback for external waypoints
-     * 
+     *
      * @param msg the reference as a nav_msgs::Path
      */
     void WaypointCallback(const nav_msgs::Path &msg);
@@ -33,6 +34,8 @@ public:
     void OffsetCallback(const geometry_msgs::PoseWithCovarianceStamped &msg);
 
     void ResetCallback(const std_msgs::Empty &msg);
+
+    void ReverseCallback(const std_msgs::Empty &msg);
 
 private:
     ros::NodeHandle nh_;
@@ -43,15 +46,18 @@ private:
     std::unique_ptr<Reader> reader_;   /** File reader class */
 
     ros::Subscriber waypoints_sub_; /** Subscriber for external waypoints */
-    ros::Subscriber offset_sub_; /** Subscriber for external waypoints */
-    ros::Subscriber reset_sub_; /** Subscriber for resetting the map */
+    ros::Subscriber offset_sub_;    /** Subscriber for external waypoints */
+    ros::Subscriber reset_sub_;     /** Subscriber for resetting the map */
+    ros::Subscriber reverse_sub_;   /** Subscriber for reversing the map */
     ros::Publisher map_pub_;        /** Publisher for road polyline output */
     ros::Publisher reference_pub_;  /** Publisher for road polyline output */
+    ros::Publisher goal_pub_;       /** Publisher for road polyline output */
 
     roadmap_msgs::RoadPolylineArray road_msg_; // Setup the message
     nav_msgs::Path ref_msg_;                   // Setup the message
 
     ros::Timer timer_;
+    bool is_reversed_;
 
     int runs_ = 0;
 
@@ -75,7 +81,5 @@ private:
     //  */
     // void Reset();
 };
-
-
 
 #endif // __ROADMAP_H__
