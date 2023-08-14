@@ -19,11 +19,8 @@ uint8 CROSSWALK=18
 uint8 SPEEDBUMP=19 
 -->
 <way>
-  <!-- <nd x="0" y="-5" theta="1.5708"/>
-  <nd x="0" y="0" theta="1.5708"/>
-  <nd x="0" y="8" theta="1.5708"/> -->
-  <nd x="0" y="0" theta="0"/>
-  <nd x="5" y="0" theta="0"/>
-  <nd x="10" y="0" theta="0"/>
-  <lane type="road" width="5." two_way="1"/>
+  <nd x="15" y="-15" theta="2.3562"/>
+  <nd x="0" y="0" theta="2.3562"/>
+  <nd x="-15" y="15" theta="2.3562"/>
+  <lane type="road" width="5." two_way="0"/>
 </way>
