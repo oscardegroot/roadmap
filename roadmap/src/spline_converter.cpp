@@ -11,6 +11,7 @@ void SplineConverter::Initialize(rclcpp::Node *node, RoadmapConfig *config)
     input_map_markers_.reset(new RosTools::ROSMarkerPublisher(node, "roadmap/input_map", "map", 500));
     output_map_markers_.reset(new RosTools::ROSMarkerPublisher(node, "roadmap/output_map", "map", 2000));
     arrow_markers_.reset(new RosTools::ROSMarkerPublisher(node, "roadmap/output_map_arrows", "map", 2000));
+    reference_markers_.reset(new RosTools::ROSMarkerPublisher(node, "roadmap/reference_visual", "map", 300));
 
     config_ = config;
 
@@ -55,6 +56,34 @@ Map &SplineConverter::ConvertMap(Map &map)
     }
 
     return converted_map_;
+}
+
+void SplineConverter::VisualizeReference(const nav_msgs::msg::Path &ref_msg)
+{
+    auto &lines = reference_markers_->getNewLine();
+    lines.setColorInt(3, 5, 0.7);
+    lines.setScale(0.1, 0.1);
+
+    auto &points = reference_markers_->getNewPointMarker("CYLINDER");
+    points.setColor(0., 0., 0., 1.);   // Black
+    points.setScale(0.15, 0.15, 0.15); // Large then the lines
+
+    geometry_msgs::msg::Point cur_point, prev_point;
+    bool first = true;
+    for (auto &pose : ref_msg.poses)
+    {
+        points.addPointMarker(pose.pose);
+
+        cur_point.x = pose.pose.position.x;
+        cur_point.y = pose.pose.position.y;
+
+        if (!first)
+            lines.addLine(prev_point, cur_point);
+
+        prev_point = cur_point;
+        first = false;
+    }
+    reference_markers_->publish();
 }
 
 void SplineConverter::VisualizeMap()
@@ -367,6 +396,7 @@ void SplineConverter::FitCubicSpline(Lane &lane, std::vector<Waypoint> &waypoint
     int n_spline_pts = ceil(length / spline_sample_dist);                           // 70  / 10 = 7
     waypoints_out.resize(n_spline_pts);
     double s_cur = 0;
+
     for (int i = 0; i < n_spline_pts; i++)
     {
         waypoints_out[i].s = s_cur;
@@ -378,14 +408,14 @@ void SplineConverter::FitCubicSpline(Lane &lane, std::vector<Waypoint> &waypoint
     }
 
     // Check if we are not at our destination yet
-    double error = std::sqrt(std::pow(waypoints_out.back().x - lane.spline_x.m_y_.back(), 2) + std::pow(waypoints_out.back().y - lane.spline_y.m_y_.back(), 2));
+    double error = std::sqrt(std::pow(waypoints_out.back().x - lane.spline_x(length), 2) + std::pow(waypoints_out.back().y - lane.spline_y(length), 2));
     if (error > 0.01)
     {
         // Add a final waypoint
         waypoints_out.emplace_back(
-            lane.spline_x.m_x_.back(),
-            lane.spline_y.m_y_.back(),
-            waypoints_out.back().theta);
+            lane.spline_x(length),
+            lane.spline_y(length),
+            std::atan2(lane.spline_y.deriv(1, length), lane.spline_x.deriv(1, length)));
     }
 
     ROADMAP_INFO(logger_, "Cubic Spline Fitted");

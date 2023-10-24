@@ -18,6 +18,7 @@ std_msgs
 asr_rapidxml
 roadmap_msgs
 ros_tools
+autoware_auto_planning_msgs
 )
 
 find_package(ament_cmake REQUIRED)
@@ -27,6 +28,7 @@ find_package(ros_tools REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(roadmap_msgs REQUIRED)
+find_package(autoware_auto_planning_msgs REQUIRED)
 
 find_package(asr_rapidxml REQUIRED)
 find_package(ros_tools REQUIRED)

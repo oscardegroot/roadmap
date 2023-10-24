@@ -4,7 +4,7 @@
   <version>0.0.0</version>
   <description>The roadmap package</description>
 
- 
+
   <maintainer email="r2c1@todo.todo">r2c1</maintainer>
 
   <license>TODO</license>
@@ -21,6 +21,8 @@
   <depend>asr_rapidxml</depend>
   <depend>roadmap_msgs</depend>
   <depend>ros_tools</depend>
+
+  <depend>autoware_auto_planning_msgs</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

@@ -150,6 +150,7 @@ void Roadmap::Poll()
     spline_converter_->VisualizeInputData(reader_->GetMap());
 
     spline_converter_->VisualizeMap();
+    spline_converter_->VisualizeReference(ref_msg_);
 
     ROADMAP_INFO(this->get_logger(), "======= END LOOP =======");
 }

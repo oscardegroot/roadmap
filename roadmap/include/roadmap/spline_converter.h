@@ -66,6 +66,7 @@ public:
     void VisualizeInputData(Map &map);
 
     void VisualizeMap();
+    void VisualizeReference(const nav_msgs::msg::Path &ref_msg);
 
 private:
     rclcpp::Logger logger_;
@@ -75,6 +76,7 @@ private:
     std::unique_ptr<RosTools::ROSMarkerPublisher> input_map_markers_;
     std::unique_ptr<RosTools::ROSMarkerPublisher> output_map_markers_;
     std::unique_ptr<RosTools::ROSMarkerPublisher> arrow_markers_;
+    std::unique_ptr<RosTools::ROSMarkerPublisher> reference_markers_;
 
     /**
      * @brief Fit a spline to a particular lane

@@ -14,13 +14,13 @@
       # === Spline settings === #
       spline:
         fit_clothoid: true             # Fits a clothoid before fitting cubic splines if TRUE
-        minimum_waypoint_distance: 2.0  # Ignore waypoints closer than this distance together
-        spline_sample_distance: 5.       # Distance between sampled waypoints on the spline
-        clothoid_point_per_xm: 0.1 #0.25        # Distance forced between points on the Clothoid
+        minimum_waypoint_distance: 1.0  # Ignore waypoints closer than this distance together
+        spline_sample_distance: 4.0       # Distance between sampled waypoints on the spline
+        clothoid_point_per_xm: 0.1        # Distance forced between points on the Clothoid
 
       # === Visual settings === #
       scale: 1.0                        # Scale of the visuals
       
       # === Topics === #
       # Topic to read waypoints from INSTEAD of using a predefined map
-      external_waypoint_topic: '/carla/ego_vehicle/waypoints' 
+      external_waypoint_topic: '/roadmap/input' 
