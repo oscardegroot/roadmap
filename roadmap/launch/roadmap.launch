@@ -2,11 +2,13 @@
 <launch>
     <arg name="map" default="" />
     <arg name="overwrite_map" default="false" />
-    <arg name="config_file" default="$(find roadmap)/config/settings.yaml" />
+    <arg name="config_file" default="$(find-pkg-share roadmap)/config/settings.yaml" />
 
-    <rosparam command="load" file="$(arg config_file)"/>
+    <!-- <rosparam command="load" file="$(arg config_file)"/> -->
     
-    <param name="roadmap/map_file_name" value="$(arg map)" if="$(arg overwrite_map)"/>    
 
-    <node pkg="roadmap" type="roadmap_node" name="roadmap_node" respawn="false" output="screen"/>
+    <node pkg="roadmap" exec="roadmap_node" name="roadmap_node" respawn="false" output="screen">
+        <param from="$(var config_file)"/>
+        <!-- <param name="roadmap/map_file_name" value="$(var map)" if="$(var overwrite_map)"/>     -->
+    </node>
 </launch>  

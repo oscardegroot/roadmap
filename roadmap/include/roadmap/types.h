@@ -1,12 +1,12 @@
 #ifndef __TYPES_H__
 #define __TYPES_H__
 
-#include "roadmap_msgs/RoadPolylineArray.h"
-#include "roadmap_msgs/RoadPolyline.h"
+#include <roadmap_msgs/msg/road_polyline_array.hpp>
+#include <roadmap_msgs/msg/road_polyline.hpp>
 
-#include "nav_msgs/Path.h"
-#include "geometry_msgs/PoseStamped.h"
-#include "geometry_msgs/Pose.h"
+#include <nav_msgs/msg/path.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/pose.hpp>
 
 #include <spline/spline.h>
 #include "ros_tools/helpers.h"
@@ -159,31 +159,31 @@ struct Way
         {
             if (two_way)
             {
-                lanes.emplace_back(nodes, plus_offset, roadmap_msgs::RoadPolyline::LANECENTER_FREEWAY, id); // Main road is ON the reference
-                lanes.emplace_back(nodes, minus_offset - width, roadmap_msgs::RoadPolyline::LANECENTER_FREEWAY, id);
+                lanes.emplace_back(nodes, plus_offset, roadmap_msgs::msg::RoadPolyline::LANECENTER_FREEWAY, id); // Main road is ON the reference
+                lanes.emplace_back(nodes, minus_offset - width, roadmap_msgs::msg::RoadPolyline::LANECENTER_FREEWAY, id);
 
-                lanes.emplace_back(nodes, plus_offset - width / 2., roadmap_msgs::RoadPolyline::ROADLINE_BROKENSINGLEWHITE, id);
+                lanes.emplace_back(nodes, plus_offset - width / 2., roadmap_msgs::msg::RoadPolyline::ROADLINE_BROKENSINGLEWHITE, id);
 
-                lanes.emplace_back(nodes, plus_offset + width / 2., roadmap_msgs::RoadPolyline::ROADEDGEBOUNDARY, id);
-                lanes.emplace_back(nodes, minus_offset - 3. / 2. * width, roadmap_msgs::RoadPolyline::ROADEDGEBOUNDARY, id);
+                lanes.emplace_back(nodes, plus_offset + width / 2., roadmap_msgs::msg::RoadPolyline::ROADEDGEBOUNDARY, id);
+                lanes.emplace_back(nodes, minus_offset - 3. / 2. * width, roadmap_msgs::msg::RoadPolyline::ROADEDGEBOUNDARY, id);
             }
             else
             {
-                lanes.emplace_back(nodes, plus_offset, roadmap_msgs::RoadPolyline::LANECENTER_FREEWAY, id);
+                lanes.emplace_back(nodes, plus_offset, roadmap_msgs::msg::RoadPolyline::LANECENTER_FREEWAY, id);
 
-                lanes.emplace_back(nodes, minus_offset - width / 2., roadmap_msgs::RoadPolyline::ROADEDGEBOUNDARY, id);
-                lanes.emplace_back(nodes, plus_offset + width / 2., roadmap_msgs::RoadPolyline::ROADEDGEBOUNDARY, id);
+                lanes.emplace_back(nodes, minus_offset - width / 2., roadmap_msgs::msg::RoadPolyline::ROADEDGEBOUNDARY, id);
+                lanes.emplace_back(nodes, plus_offset + width / 2., roadmap_msgs::msg::RoadPolyline::ROADEDGEBOUNDARY, id);
             }
         }
         else if (!_type.compare("crosswalk"))
         {
-            lanes.emplace_back(nodes, plus_offset, roadmap_msgs::RoadPolyline::CROSSWALK, id);
+            lanes.emplace_back(nodes, plus_offset, roadmap_msgs::msg::RoadPolyline::CROSSWALK, id);
         }
         else if (!_type.compare("sidewalk")) // In some cases, we want a new way object, offset from the current one
         {
-            lanes.emplace_back(nodes, plus_offset, roadmap_msgs::RoadPolyline::LANECENTER_SURFACESTREET, id);
+            lanes.emplace_back(nodes, plus_offset, roadmap_msgs::msg::RoadPolyline::LANECENTER_SURFACESTREET, id);
             if (two_way)
-                lanes.emplace_back(nodes, minus_offset, roadmap_msgs::RoadPolyline::LANECENTER_SURFACESTREET, id);
+                lanes.emplace_back(nodes, minus_offset, roadmap_msgs::msg::RoadPolyline::LANECENTER_SURFACESTREET, id);
         }
 
         // For the first added lane
@@ -233,7 +233,7 @@ struct Map
      *
      * @param msg the output message
      */
-    void ToMsg(roadmap_msgs::RoadPolylineArray &msg)
+    void ToMsg(roadmap_msgs::msg::RoadPolylineArray &msg)
     {
         msg.road_polylines.reserve(ways.size());
 
@@ -242,11 +242,11 @@ struct Map
         {
             for (Lane &lane : way.lanes)
             {
-                roadmap_msgs::RoadPolyline line_msg;
-                line_msg.type = lane.type;
+                roadmap_msgs::msg::RoadPolyline line_msg;
+                line_msg.type = (uint8_t)lane.type;
                 line_msg.id = lane.id;
 
-                geometry_msgs::Point point;
+                geometry_msgs::msg::Point point;
                 for (Node &node : lane.nodes)
                 {
                     point.x = node.x;
@@ -258,7 +258,7 @@ struct Map
             }
         }
 
-        msg.header.stamp = ros::Time::now();
+        msg.header.stamp = rclcpp::Clock().now();
         msg.header.frame_id = "map";
     }
 
@@ -267,7 +267,7 @@ struct Map
      *
      * @param msg the output message
      */
-    void ToMsg(nav_msgs::Path &msg)
+    void ToMsg(nav_msgs::msg::Path &msg)
     {
         // Save the road as reference trajectory
 
@@ -277,7 +277,7 @@ struct Map
             for (Lane &lane : way.lanes)
             {
                 // Look for the reference trajectory
-                if (lane.type == roadmap_msgs::RoadPolyline::LANECENTER_FREEWAY)
+                if (lane.type == roadmap_msgs::msg::RoadPolyline::LANECENTER_FREEWAY)
                 {
                     msg.poses.reserve(lane.nodes.size());
 
@@ -286,8 +286,8 @@ struct Map
                     // line_msg.id = lane.id;
 
                     // geometry_msgs::Point point;
-                    geometry_msgs::PoseStamped pose_msg;
-                    pose_msg.header.stamp = ros::Time::now();
+                    geometry_msgs::msg::PoseStamped pose_msg;
+                    pose_msg.header.stamp = rclcpp::Clock().now();
                     pose_msg.header.frame_id = "map";
 
                     for (Node &node : lane.nodes)
@@ -299,7 +299,7 @@ struct Map
 
                         msg.poses.push_back(pose_msg);
                     }
-                    msg.header.stamp = ros::Time::now();
+                    msg.header.stamp = rclcpp::Clock().now();
                     msg.header.frame_id = "map";
                     return;
                 }

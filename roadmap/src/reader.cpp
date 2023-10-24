@@ -1,27 +1,34 @@
 #include "reader.h"
 
-void Reader::Read()
+#include <ros_tools/ros2_wrappers.h>
+
+void Reader::Read(rclcpp::Node::SharedPtr node)
 {
-    std::string map_file = ros::package::getPath(config_->map_package_name_) + "/" + config_->map_file_name_;
-    Read(map_file);
+    std::string map_file = RosTools::GetSharedPath(config_->map_package_name_) + config_->map_file_name_;
+    Read(node, map_file);
 }
 
-void Reader::Read(const std::string &file_name)
+void Reader::Read(rclcpp::Node::SharedPtr node, const std::string &&file_name)
+{
+    std::string map_file = RosTools::GetSharedPath(config_->map_package_name_) + file_name;
+    Read(node, map_file);
+}
+void Reader::Read(rclcpp::Node::SharedPtr node, const std::string &file_name)
 {
     if (from_callback_)
         return;
 
-    ROADMAP_INFO("Reading map file");
+    ROADMAP_INFO(READ_LOGGER, "Reading map file");
     map_.Clear();
 
     // If the path does not contain the package, add it
     std::string map_file;
     if (file_name.find("//" + config_->map_package_name_ + "//") != std::string::npos)
-        map_file = ros::package::getPath(config_->map_package_name_) + "/" + file_name;
+        map_file = RosTools::GetSharedPath(config_->map_package_name_) + file_name;
     else
         map_file = file_name;
 
-    ROADMAP_INFO_STREAM("\tFile: " << map_file);
+    ROADMAP_INFO_STREAM(READ_LOGGER, "\tFile: " << map_file);
 
     // Read the file with the correct file extension
     if (map_file.substr(map_file.find_last_of(".") + 1) == "xml")
@@ -29,13 +36,7 @@ void Reader::Read(const std::string &file_name)
     else if (map_file.substr(map_file.find_last_of(".") + 1) == "osm")
         ReadOSM(map_file);
     else
-        ReadYAML(map_file);
-}
-
-void Reader::Read(const std::string &&file_name)
-{
-    std::string map_file = ros::package::getPath(config_->map_package_name_) + "/" + file_name;
-    Read(map_file);
+        ReadYAML(node, map_file);
 }
 
 void Reader::ReadXML(const std::string &file)
@@ -78,24 +79,22 @@ void Reader::ReadXML(const std::string &file)
         }
 
         map_.ways.push_back(new_way);
-        ROADMAP_INFO("XML Read.");
+        ROADMAP_INFO(READ_LOGGER, "XML Read.");
     }
 }
 
-void Reader::ReadYAML(const std::string &file)
+void Reader::ReadYAML(rclcpp::Node::SharedPtr node, const std::string &file)
 {
     // std::cout << std::string("rosparam load ") + file << std::endl;
     if (system(std::string("rosparam load " + file).c_str()))
         return;
 
     // Assume one Way object as reference path
-
-    ros::NodeHandle nh;
-
     std::vector<double> x, y, theta;
-    RoadmapConfig::retrieveParameter(nh, "global_path/x", x);
-    RoadmapConfig::retrieveParameter(nh, "global_path/y", y);
-    RoadmapConfig::retrieveParameter(nh, "global_path/theta", theta);
+
+    config_->retrieveParameter(node, "global_path.x", x);
+    config_->retrieveParameter(node, "global_path.y", y);
+    config_->retrieveParameter(node, "global_path.theta", theta);
     assert(x.size() == y.size());
     assert(y.size() == theta.size());
 
@@ -115,7 +114,7 @@ void Reader::ReadYAML(const std::string &file)
     new_way.AddLane("road", 4.0, true, id);
     new_way.AddLane("sidewalk", 2.0, true, id);
     map_.ways.push_back(new_way);
-    ROADMAP_INFO("YAML Read.");
+    ROADMAP_INFO(READ_LOGGER, "YAML Read.");
 }
 
 void Reader::ReadOSM(const std::string &file)
@@ -216,15 +215,15 @@ void Reader::ReadOSM(const std::string &file)
     // }
 
     // map_.ways.push_back(new_way);
-    // ROADMAP_INFO("XML Read.");
+    // ROADMAP_INFO(READ_LOGGER, "XML Read.");
 }
 
-void Reader::WaypointCallback(const nav_msgs::Path &msg)
+void Reader::WaypointCallback(const nav_msgs::msg::Path &msg)
 {
     from_callback_ = true;
 
     // if (config_->activate_debug_output_)
-    ROADMAP_INFO("Received " << std::floor(0.5 * msg.poses.size()) << " Waypoints");
+    ROADMAP_INFO(READ_LOGGER, "Received " << std::floor(0.5 * msg.poses.size()) << " Waypoints");
 
     // Assume one Way object as reference path
     map_.Clear();
@@ -244,10 +243,10 @@ void Reader::WaypointCallback(const nav_msgs::Path &msg)
     new_way.AddLane("sidewalk", 2.0, true, id);
     map_.ways.push_back(new_way);
 
-    ROADMAP_INFO("Waypoints Saved.");
+    ROADMAP_INFO(READ_LOGGER, "Waypoints Saved.");
 }
 
-void Reader::OffsetCallback(const geometry_msgs::PoseWithCovarianceStamped &msg)
+void Reader::OffsetCallback(const geometry_msgs::msg::PoseWithCovarianceStamped &msg)
 {
     offset_ = msg.pose.pose;
 }

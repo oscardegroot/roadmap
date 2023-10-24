@@ -1,62 +1,51 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.5)
 project(roadmap)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-fstack-protector)
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RelWithDebInfo)
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wno-deprecated-declarations")
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
-  roslib
-  roscpp
-  std_msgs
-  asr_rapidxml
-  roadmap_msgs
-  ros_tools
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter)
+endif()
+add_compile_options(-DCMAKE_BUILD_TYPE=Release)
+
+## DEPENDENCIES ##
+set(DEPENDENCIES
+rclcpp
+geometry_msgs
+std_msgs
+asr_rapidxml
+roadmap_msgs
+ros_tools
 )
 
-## System dependencies are found with CMake's conventions
-include_directories(
-  include/roadmap 
-  include/spline
-  )
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
 
-###################################
-## catkin specific configuration ##
-###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if your package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
-  CATKIN_DEPENDS geometry_msgs roslib roscpp std_msgs asr_rapidxml roadmap_msgs ros_tools
-  INCLUDE_DIRS include include/${PROJECT_NAME} include/spline
-  LIBRARIES roadmap
-)
+find_package(ros_tools REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(roadmap_msgs REQUIRED)
+
+find_package(asr_rapidxml REQUIRED)
+find_package(ros_tools REQUIRED)
+
+# find_package(eigen3_cmake_module REQUIRED)
+# find_package(Eigen3 REQUIRED)
+# add_definitions(${EIGEN_DEFINITIONS})
 
 ###########
 ## Build ##
 ###########
 
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
 include_directories(
-	include
-	include/roadmap
-	include/spline
-  ${catkin_INCLUDE_DIRS}
+  include/${PROJECT_NAME}
+  include/spline
 )
 
 ## Declare a C++ library
-add_library(roadmap
+add_library(${PROJECT_NAME}
    src/roadmap.cpp
    src/configuration.cpp
    src/reader.cpp
@@ -64,17 +53,47 @@ add_library(roadmap
    src/spline/spline.cpp
    src/spline/Clothoid.cpp
 )
-add_dependencies(roadmap ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
+ament_target_dependencies(${PROJECT_NAME}
+  ${DEPENDENCIES}
+)
 
+add_executable(${PROJECT_NAME}_node src/roadmap_node.cpp)
+target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME})
 
-add_executable(roadmap_node src/roadmap_node.cpp)
-target_link_libraries(roadmap_node roadmap ${catkin_LIBRARIES})
-add_dependencies(roadmap_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+## INSTALL ##
+install(
+  TARGETS ${PROJECT_NAME}
+  EXPORT export_${PROJECT_NAME}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+)
 
-#############
-## Install ##
-#############
+install(TARGETS ${PROJECT_NAME}_node
+  DESTINATION lib/${PROJECT_NAME})
 
+install(DIRECTORY include/ 
+  DESTINATION include/${PROJECT_NAME})
 
-# install(FILES "${PROJECT_NAME}Config.cmake" "${PROJECT_NAME}ConfigVersion.cmake"
-#   DESTINATION "share/${PROJECT_NAME}/cmake")
+install(DIRECTORY config
+  DESTINATION share/${PROJECT_NAME})
+
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME})
+
+install(DIRECTORY maps
+  DESTINATION share/${PROJECT_NAME})
+
+install(DIRECTORY rviz
+  DESTINATION share/${PROJECT_NAME})
+
+# ament_export_include_directories(include/${PROJECT_NAME})
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_dependencies(${DEPENDENCIES})
+
+ament_package()

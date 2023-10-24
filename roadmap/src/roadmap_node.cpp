@@ -1,30 +1,19 @@
 
-#include <ros/ros.h>
+#include <roadmap.h>
 
-#include "roadmap.h"
+#include <rclcpp/rclcpp.hpp>
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
-  try
-  {
-    ros::init(argc, argv, ros::this_node::getName());
 
-    Roadmap roadmap;
+  rclcpp::init(argc, argv);
 
-    // spin node, till ROS node is running on
-    ROS_INFO_STREAM_NAMED("%s INITIALIZE SUCCESSFULLY!!", ros::this_node::getName().c_str());
-    ros::spin();
-  }
+  auto roadmap = std::make_shared<Roadmap>();
+  roadmap->Initialize();
 
-  catch (ros::Exception &e)
-  {
-    ROS_ERROR("predictive_control_node: Error occured: %s ", e.what());
-    exit(1);
-  }
+  rclcpp::spin(roadmap);
+
+  rclcpp::shutdown();
 
   return 0;
-}
-
-void Poll()
-{
 }

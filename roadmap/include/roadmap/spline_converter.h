@@ -1,21 +1,21 @@
 #ifndef SPLINE_CONVERTER_H
 #define SPLINE_CONVERTER_H
 
-#include <ros/ros.h>
+#include <configuration.h>
+#include <types.h>
+#include <helpers.h>
+
+#include <ros_tools/ros_visuals.h>
+
+#include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <vector>
 #include <map>
 #include <Eigen/Eigen>
 
-#include <ros_tools/ros_visuals.h>
-
 // spline libraries
 #include <spline.h>
 #include <Clothoid.h>
-
-#include "configuration.h"
-#include "types.h"
-#include "helpers.h"
 
 // Whens earching for the closest point on the path, this variable indicates the distance that the algorithm searches behind the current spline point.
 #define MAX_STEP_BACK_TOLERANCE 0.1f
@@ -47,9 +47,9 @@ class SplineConverter
      */
 
 public:
-    SplineConverter(){};
+    SplineConverter();
 
-    void Initialize(ros::NodeHandle &nh, RoadmapConfig *config);
+    void Initialize(rclcpp::Node *node, RoadmapConfig *config);
 
 public:
     Map converted_map_;
@@ -68,6 +68,7 @@ public:
     void VisualizeMap();
 
 private:
+    rclcpp::Logger logger_;
     RoadmapConfig *config_; /** parameters */
 
     /** Two classes for visualization of the map */

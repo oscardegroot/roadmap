@@ -1,25 +1,31 @@
 #include "spline_converter.h"
 
-void SplineConverter::Initialize(ros::NodeHandle &nh, RoadmapConfig *config)
+SplineConverter::SplineConverter()
+    : logger_(rclcpp::get_logger("roadmap.spline_converter"))
 {
-    input_map_markers_.reset(new RosTools::ROSMarkerPublisher(nh, "roadmap/input_map", "map", 500));
-    output_map_markers_.reset(new RosTools::ROSMarkerPublisher(nh, "roadmap/output_map", "map", 2000));
-    arrow_markers_.reset(new RosTools::ROSMarkerPublisher(nh, "roadmap/output_map_arrows", "map", 2000));
+}
+
+void SplineConverter::Initialize(rclcpp::Node *node, RoadmapConfig *config)
+{
+
+    input_map_markers_.reset(new RosTools::ROSMarkerPublisher(node, "roadmap/input_map", "map", 500));
+    output_map_markers_.reset(new RosTools::ROSMarkerPublisher(node, "roadmap/output_map", "map", 2000));
+    arrow_markers_.reset(new RosTools::ROSMarkerPublisher(node, "roadmap/output_map_arrows", "map", 2000));
 
     config_ = config;
 
-    ROADMAP_WARN("Initialized Spline Converter");
+    ROADMAP_WARN(logger_, "Initialized Spline Converter");
 }
 
 Map &SplineConverter::ConvertMap(Map &map)
 {
     if (map.ways.size() == 0)
     {
-        ROADMAP_WARN("Tried to convert an empty map (returning)")
+        ROADMAP_WARN(logger_, "Tried to convert an empty map (returning)")
         return converted_map_; // Needs to also give an error
     }
 
-    ROADMAP_INFO_STREAM("Fitting splines over " << map.ways.size() << " ways");
+    ROADMAP_INFO_STREAM(logger_, "Fitting splines over " << map.ways.size() << " ways");
     // VisualizeMap(map);
 
     // First fit splines on all defined ways
@@ -45,7 +51,7 @@ Map &SplineConverter::ConvertMap(Map &map)
                     total_waypoints++;
             }
         }
-        ROADMAP_INFO_STREAM("Done converting map (" << total_waypoints << " waypoints)");
+        ROADMAP_INFO_STREAM(logger_, "Done converting map (" << total_waypoints << " waypoints)");
     }
 
     return converted_map_;
@@ -53,7 +59,7 @@ Map &SplineConverter::ConvertMap(Map &map)
 
 void SplineConverter::VisualizeMap()
 {
-    ROADMAP_INFO("Visualizing the map");
+    ROADMAP_INFO(logger_, "Visualizing the map");
     bool plot_arrows = false;
     bool plot_cubes = true;
 
@@ -67,7 +73,7 @@ void SplineConverter::VisualizeMap()
         {
             const Lane &lane = way.lanes[i];
 
-            if (lane.type == roadmap_msgs::RoadPolyline::LANECENTER_FREEWAY)
+            if (lane.type == roadmap_msgs::msg::RoadPolyline::LANECENTER_FREEWAY)
                 continue;
 
             RosTools::ROSMultiplePointMarker &cube = output_map_markers_->getNewMultiplePointMarker("CUBE"); // Batch rendering (same color and scale)
@@ -122,7 +128,8 @@ void SplineConverter::VisualizeMap()
 
 void SplineConverter::VisualizeInputData(Map &map)
 {
-    ROADMAP_INFO("Visualizing input data");
+
+    ROADMAP_INFO(logger_, "Visualizing input data");
 
     RosTools::ROSPointMarker &unique_cubes = input_map_markers_->getNewPointMarker("CUBE"); // Unique per color
 
@@ -184,12 +191,12 @@ void SplineConverter::VisualizeLaneSpline(const Lane &lane)
     line.setScale(0.1);
     line.setOrientation(0.0);
 
-    geometry_msgs::Point cur, prev;
+    geometry_msgs::msg::Point cur, prev;
 
     for (size_t i = 0; i < lane.nodes.size(); i++)
     {
         // Do not plot the middle of the roads (just the edges)
-        if (lane.type == roadmap_msgs::RoadPolyline::LANECENTER_FREEWAY)
+        if (lane.type == roadmap_msgs::msg::RoadPolyline::LANECENTER_FREEWAY)
             continue;
 
         const Node &node = lane.nodes[i];
@@ -252,7 +259,7 @@ void SplineConverter::FitSplineOnWaypoints(const std::vector<Waypoint> &waypoint
 
 void SplineConverter::FitClothoid(const std::vector<Waypoint> &waypoints, std::vector<double> &x, std::vector<double> &y, std::vector<double> &s)
 {
-    ROADMAP_INFO("Reference Path: Generating path with clothoid interpolation...");
+    ROADMAP_INFO(logger_, "Generating path with clothoid interpolation...");
 
     double length = 0;
     double k, dk, L;
@@ -307,7 +314,7 @@ void SplineConverter::FitClothoid(const std::vector<Waypoint> &waypoints, std::v
 
 void SplineConverter::ConvertWaypointsToVectors(const std::vector<Waypoint> &waypoints, std::vector<double> &x, std::vector<double> &y, std::vector<double> &s)
 {
-    ROADMAP_INFO("Generating spline without clothoid interpolation");
+    ROADMAP_INFO(logger_, "Generating spline without clothoid interpolation");
     assert(waypoints.size() > 1);
 
     double length = 0.;
@@ -381,5 +388,5 @@ void SplineConverter::FitCubicSpline(Lane &lane, std::vector<Waypoint> &waypoint
             waypoints_out.back().theta);
     }
 
-    ROADMAP_INFO("Cubic Spline Fitted");
+    ROADMAP_INFO(logger_, "Cubic Spline Fitted");
 }
