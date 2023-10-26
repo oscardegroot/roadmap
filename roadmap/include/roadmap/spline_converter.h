@@ -1,9 +1,9 @@
 #ifndef SPLINE_CONVERTER_H
 #define SPLINE_CONVERTER_H
 
-#include <configuration.h>
-#include <types.h>
-#include <helpers.h>
+#include <roadmap/configuration.h>
+#include <roadmap/types.h>
+#include <roadmap/helpers.h>
 
 #include <ros_tools/ros_visuals.h>
 
@@ -14,8 +14,8 @@
 #include <Eigen/Eigen>
 
 // spline libraries
-#include <spline.h>
-#include <Clothoid.h>
+#include <spline/spline.h>
+#include <spline/Clothoid.h>
 
 // Whens earching for the closest point on the path, this variable indicates the distance that the algorithm searches behind the current spline point.
 #define MAX_STEP_BACK_TOLERANCE 0.1f

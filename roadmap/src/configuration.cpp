@@ -1,5 +1,5 @@
 
-#include <configuration.h>
+#include <roadmap/configuration.h>
 
 RoadmapConfig::RoadmapConfig()
 {

@@ -9,7 +9,7 @@
 #include <cassert>
 #include <vector>
 #include <algorithm>
-#include <spline.h>
+#include <spline/spline.h>
 
 // band_matrix implementation
 // -------------------------

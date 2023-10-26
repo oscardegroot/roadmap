@@ -1,4 +1,4 @@
-#include "spline_converter.h"
+#include <roadmap/spline_converter.h>
 
 SplineConverter::SplineConverter()
     : logger_(rclcpp::get_logger("roadmap.spline_converter"))
@@ -48,7 +48,7 @@ Map &SplineConverter::ConvertMap(Map &map)
         {
             for (auto &lane : way.lanes)
             {
-                for (auto &node : lane.nodes)
+                for (size_t n = 0; n < lane.nodes.size(); n++)
                     total_waypoints++;
             }
         }

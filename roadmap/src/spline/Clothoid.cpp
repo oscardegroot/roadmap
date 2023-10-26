@@ -40,7 +40,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <Clothoid.h>
+#include <spline/Clothoid.h>
 
 #ifndef CLOTHOID_ASSERT
 #define CLOTHOID_ASSERT(COND, MSG)           \
@@ -382,14 +382,14 @@ namespace Clothoid
         valueType cg = cos(g) / z;
         valueType sg = sin(g) / z;
 
-#ifdef _MSC_VER
+        // #ifdef _MSC_VER
         valueType *Cl = (valueType *)alloca(4 * nk * sizeof(valueType));
         valueType *Sl = Cl + nk;
         valueType *Cz = Sl + nk;
         valueType *Sz = Cz + nk;
-#else
-        valueType Cl[nk], Sl[nk], Cz[nk], Sz[nk];
-#endif
+        // #else
+        // valueType Cl[nk], Sl[nk], Cz[nk], Sz[nk];
+        // #endif
 
         FresnelCS(nk, ell, Cl, Sl);
         FresnelCS(nk, ell + z, Cz, Sz);
@@ -489,12 +489,12 @@ namespace Clothoid
     {
 
         int nkk = 4 * p + 3;
-#ifdef _MSC_VER
+        // #ifdef _MSC_VER
         valueType *X0 = (valueType *)alloca(nkk * sizeof(valueType));
         valueType *Y0 = (valueType *)alloca(nkk * sizeof(valueType));
-#else
-        valueType X0[nkk], Y0[nkk];
-#endif
+        // #else
+        // valueType X0[nkk], Y0[nkk];
+        // #endif
         evalXYazero(nkk, b, X0, Y0);
 
         X = X0[0] - (a / 2) * Y0[2];
@@ -524,12 +524,12 @@ namespace Clothoid
     {
 
         int nkk = nk + 4 * p + 2;
-#ifdef _MSC_VER
+        // #ifdef _MSC_VER
         valueType *X0 = (valueType *)alloca(nkk * sizeof(valueType));
         valueType *Y0 = (valueType *)alloca(nkk * sizeof(valueType));
-#else
-        valueType X0[nkk], Y0[nkk];
-#endif
+        // #else
+        // valueType X0[nkk], Y0[nkk];
+        // #endif
         evalXYazero(nkk, b, X0, Y0);
 
         for (int j = 0; j < nk; ++j)

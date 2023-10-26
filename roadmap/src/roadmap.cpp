@@ -1,4 +1,4 @@
-#include "roadmap.h"
+#include <roadmap/roadmap.h>
 
 Roadmap::Roadmap() : rclcpp::Node("roadmap")
 {
@@ -73,7 +73,7 @@ void Roadmap::OffsetCallback(const geometry_msgs::msg::PoseWithCovarianceStamped
 
 void Roadmap::ReverseCallback(const std_msgs::msg::Empty &msg)
 {
-
+    (void)msg; // not used
     is_reversed_ = !is_reversed_;
 
     config_.reset(new RoadmapConfig());
@@ -105,6 +105,8 @@ void Roadmap::ReverseCallback(const std_msgs::msg::Empty &msg)
 
 void Roadmap::ResetCallback(const std_msgs::msg::Empty &msg)
 {
+    (void)msg; // not used
+
     /* // Initialize the configuration
      config_.reset(new RoadmapConfig());
      config_->initialize();
