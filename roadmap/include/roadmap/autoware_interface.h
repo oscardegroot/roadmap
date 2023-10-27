@@ -8,6 +8,8 @@
 #include <autoware_auto_planning_msgs/msg/path.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+
 #include <route_handler/route_handler.hpp>
 #include <lanelet2_extension/utility/query.hpp> // See route-handler
 
@@ -19,6 +21,7 @@ using autoware_auto_mapping_msgs::msg::HADMapBin;
 using autoware_auto_planning_msgs::msg::Path;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using autoware_planning_msgs::msg::LaneletRoute;
+using geometry_msgs::msg::PoseWithCovarianceStamped;
 using nav_msgs::msg::Odometry;
 using route_handler::RouteHandler;
 
@@ -93,10 +96,13 @@ private:
 class AutowareLaneletConverter
 {
 public:
-    AutowareLaneletConverter(std::shared_ptr<Roadmap> roadmap) : roadmap_ptr_(roadmap),
-                                                                 logger_(roadmap->get_logger().get_child("lanelet_converter"))
+    AutowareLaneletConverter(std::shared_ptr<Roadmap> roadmap) : roadmap_ptr_(roadmap), logger_(rclcpp::get_logger("roadmap.lanelet_converter"))
     {
+        logger_ = roadmap->get_logger().get_child("lanelet_converter");
+
         RCLCPP_INFO(logger_, "Initializing");
+        config_ptr_ = roadmap->GetConfig();
+
         auto qos_transient_local = rclcpp::QoS{1}.transient_local();
 
         // The map of the world
@@ -110,22 +116,43 @@ public:
         // The vehicle position (to figure out from where we should look up the route)
         odometry_subscriber_ = roadmap->create_subscription<Odometry>(
             "~/input/odometry", 1, std::bind(&AutowareLaneletConverter::onOdometry, this, _1), createSubscriptionOptions(roadmap_ptr_.get()));
+
+        initial_pose_subscriber_ = roadmap->create_subscription<PoseWithCovarianceStamped>(
+            "/initialpose", 1, std::bind(&AutowareLaneletConverter::onInitialPose, this, _1), createSubscriptionOptions(roadmap_ptr_.get()));
         RCLCPP_INFO(logger_, "Ready");
+    }
+
+    // Trigger a map recompute when respawning
+    void onInitialPose(PoseWithCovarianceStamped::ConstSharedPtr msg)
+    {
+        (void)msg;
+        if (route_ptr_)
+        {
+            RCLCPP_INFO(logger_, "Vehicle was respawned, recomputing the route.");
+            onRoute(route_ptr_); // Computing a new part of the map
+        }
     }
 
     void onOdometry(Odometry::ConstSharedPtr msg)
     {
-        // rclcpp::Time previous_msg_time = odometry_ptr_->header.stamp;
-        // rclcpp::Time cur_msg_time = msg->header.stamp;
+        if (!odometry_ptr_)
+        {
+            RCLCPP_INFO(logger_, "First odometry received");
 
-        // Update the map every 10s
-        // if (odometry_ptr_ == nullptr || (cur_msg_time < previous_msg_time + rclcpp::Duration::from_seconds(10.)))
-        // {
-        odometry_ptr_ = msg;
-
-        // if (route_ptr_ != nullptr)
-        // onRoute(route_ptr_);
-        // }
+            odometry_ptr_ = msg; // Read odometry if it was not received yet
+        }
+        else
+        {
+            rclcpp::Time previous_msg_time = odometry_ptr_->header.stamp;
+            rclcpp::Time cur_msg_time = msg->header.stamp;
+            if ((cur_msg_time - previous_msg_time).seconds() > config_ptr_->autoware_update_interval_) // Otherwise, check how old the data is
+            {
+                RCLCPP_INFO(logger_, "Updating odometry and route");
+                odometry_ptr_ = msg; // And update if necessary
+                if (route_ptr_ != nullptr)
+                    onRoute(route_ptr_); // Computing a new part of the map
+            }
+        }
     }
 
     void onMap(HADMapBin::ConstSharedPtr msg)
@@ -139,17 +166,17 @@ public:
         RCLCPP_INFO(logger_, "Route Received");
 
         // We need the map to understand the route
-        if (map_ptr_ == nullptr)
+        if (!map_ptr_)
         {
             RCLCPP_INFO_THROTTLE(logger_, *(roadmap_ptr_->get_clock()), 5000, "waiting for lanelet_map msg...");
             return;
         }
-        if (odometry_ptr_ == nullptr)
+        if (!odometry_ptr_)
         {
             RCLCPP_INFO_THROTTLE(logger_, *(roadmap_ptr_->get_clock()), 5000, "waiting for odometry msg...");
             return;
         }
-        RCLCPP_INFO(logger_, "Map was ready, computing reference path");
+        RCLCPP_INFO(logger_, "Computing reference path");
 
         route_ptr_ = msg;
 
@@ -157,11 +184,12 @@ public:
         route_handler_->setRoute(*route_ptr_);
 
         /** @see behavior_path_planner/planner manager */
+
         geometry_msgs::msg::Pose cur_pose = odometry_ptr_->pose.pose;
         PathWithLaneId reference_path{}; // The final reference path
 
-        const auto backward_length = 10.; // How far back should the path go
-        const auto forward_length = 100.; // How far forward should the path go
+        const auto backward_length = config_ptr_->autoware_backward_distance_; // How far back should the path go
+        const auto forward_length = config_ptr_->autoware_forward_distance_;   // How far forward should the path go
 
         reference_path.header = route_handler_->getRouteHeader();
 
@@ -174,7 +202,7 @@ public:
 
         reference_path = route_handler_->getCenterLinePath(current_lanes, backward_length, forward_length, true);
 
-        RCLCPP_INFO(logger_, "Reference path ready");
+        RCLCPP_INFO(logger_, "Loading reference path");
 
         // Convert to nav path and forward to the rest of the roadmap
         roadmap_ptr_->WaypointCallback(ConvertAutowarePathWithLaneIdToNavPath(reference_path));
@@ -182,6 +210,7 @@ public:
 
 private:
     std::shared_ptr<Roadmap> roadmap_ptr_;
+    std::shared_ptr<RoadmapConfig> config_ptr_;
     rclcpp::Logger logger_;
 
     rclcpp::Subscription<HADMapBin>::SharedPtr vector_map_subscriber_; /** Subscriber for external waypoints */
@@ -192,6 +221,8 @@ private:
 
     rclcpp::Subscription<Odometry>::SharedPtr odometry_subscriber_; /** Subscriber for external waypoints */
     Odometry::ConstSharedPtr odometry_ptr_{nullptr};
+
+    rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr initial_pose_subscriber_; /** Subscriber for external waypoints */
 
     std::shared_ptr<RouteHandler> route_handler_{std::make_shared<RouteHandler>()};
 };

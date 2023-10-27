@@ -13,10 +13,10 @@
 
       # === Spline settings === #
       spline:
-        fit_clothoid: true             # Fits a clothoid before fitting cubic splines if TRUE
-        minimum_waypoint_distance: 1.0  # Ignore waypoints closer than this distance together
-        spline_sample_distance: 4.0       # Distance between sampled waypoints on the spline
-        clothoid_point_per_xm: 0.1        # Distance forced between points on the Clothoid
+        fit_clothoid: false             # Fits a clothoid before fitting cubic splines if TRUE
+        minimum_waypoint_distance: 0.25  # Ignore waypoints closer than this distance together
+        spline_sample_distance: 2.0       # Distance between sampled waypoints on the spline
+        clothoid_point_per_xm: 0.5        # Distance forced between points on the Clothoid
 
       # === Visual settings === #
       scale: 1.0                        # Scale of the visuals
@@ -24,3 +24,7 @@
       # === Topics === #
       # Topic to read waypoints from INSTEAD of using a predefined map
       external_waypoint_topic: '/roadmap/input' 
+      autoware:
+        update_interval: 5. # [s] Seconds between route refreshes
+        forward_route: 100. # [m] how far the route should be computed ahead of the vehicle
+        backward_route: 10. # [m] how far the route should be computed behind the vehice

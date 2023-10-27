@@ -50,6 +50,9 @@ public:
   std::string external_waypoint_topic_;
 
   bool success_;
+
+  double autoware_update_interval_;
+  double autoware_forward_distance_, autoware_backward_distance_;
 };
 
 #endif

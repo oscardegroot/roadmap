@@ -37,8 +37,10 @@ public:
 
     void ReverseCallback(const std_msgs::msg::Empty &msg);
 
+    std::shared_ptr<RoadmapConfig> GetConfig() const {return config_;}
+
 private:
-    std::unique_ptr<RoadmapConfig> config_; /** Parameters */
+    std::shared_ptr<RoadmapConfig> config_; /** Parameters */
 
     std::unique_ptr<SplineConverter> spline_converter_; /** Spline convertion class */
     std::unique_ptr<Reader> reader_;                    /** File reader class */

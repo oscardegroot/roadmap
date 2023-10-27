@@ -223,14 +223,14 @@ void Reader::WaypointCallback(const nav_msgs::msg::Path &msg)
     from_callback_ = true;
 
     // if (config_->activate_debug_output_)
-    ROADMAP_INFO(READ_LOGGER, "Received " << std::floor(0.5 * msg.poses.size()) << " Waypoints");
+    ROADMAP_INFO(READ_LOGGER, "Received " << std::floor(msg.poses.size()) << " Waypoints");
 
     // Assume one Way object as reference path
     map_.Clear();
 
     // Create a way object
     Way new_way;
-    for (size_t i = 0; i < msg.poses.size(); i += 2)
+    for (size_t i = 0; i < msg.poses.size(); i++)
     {
         new_way.AddNode(Node(msg.poses[i].pose.position.x,
                              msg.poses[i].pose.position.y,
