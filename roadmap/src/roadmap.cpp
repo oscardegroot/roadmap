@@ -129,6 +129,8 @@ void Roadmap::ConvertMap()
     ref_msg_.poses.clear();
     reader_->GetMap().ToMsg(road_msg_);                // Load map data into the message
     spline_converter_->converted_map_.ToMsg(ref_msg_); // Load reference path data into the message
+
+    // Left / Right boundary?
 }
 
 void Roadmap::Poll()

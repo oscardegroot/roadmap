@@ -198,9 +198,10 @@ public:
         route_handler_->getClosestLaneletWithinRoute(cur_pose, &closest_lane); // Get the closest lanelet to the pose
 
         const auto current_lanes = route_handler_->getLaneletSequence(
-            closest_lane, cur_pose, backward_length, forward_length);
+            closest_lane, cur_pose, -backward_length, forward_length);
 
-        reference_path = route_handler_->getCenterLinePath(current_lanes, backward_length, forward_length, true);
+        reference_path = route_handler_->getCenterLinePath(current_lanes, -backward_length, forward_length, true);
+        // How far apart are these points?
 
         RCLCPP_INFO(logger_, "Loading reference path");
 
