@@ -14,6 +14,40 @@
 // Radius of Earth
 #define GLOBE_RADIUS 6371.0e3
 
+// Map -> Ways -> Lanes -> Node
+
+/** Struct for a waypoint with distance */
+struct Waypoint
+{
+    double x, y, theta, s;
+
+    Waypoint()
+    {
+    }
+
+    Waypoint(double _x, double _y, double _theta, double _s)
+        : x(_x), y(_y), theta(_theta), s(_s)
+    {
+    }
+    Waypoint(double _x, double _y, double _theta)
+        : x(_x), y(_y), theta(_theta), s(-1.)
+    {
+    }
+};
+
+inline void WaypointVectorToGeometryPointVector(const std::vector<Waypoint> &waypoints,
+                                                std::vector<geometry_msgs::msg::Point> &out)
+{
+    out.clear();
+    geometry_msgs::msg::Point p;
+    for (auto &waypoint : waypoints)
+    {
+        p.x = waypoint.x;
+        p.y = waypoint.y;
+        out.emplace_back(p);
+    }
+}
+
 /**
  * @brief Struct describing a waypoint node (x, y, theta)
  */
@@ -51,6 +85,8 @@ struct Lane
     bool spline_fit;               /** Has a spline been fitted over this lane? */
     double length;                 /** Length of the lane */
     tk::spline spline_x, spline_y; /** Cubic spline objects */
+
+    Lane() { spline_fit = false; };
 
     /**
      * @brief Construct a new Lane object
@@ -95,6 +131,11 @@ struct Lane
         spline_x = _spline_x;
         spline_y = _spline_y;
         spline_fit = true;
+    }
+
+    double distanceTo(double s, const Waypoint &point) const
+    {
+        return RosTools::dist(Eigen::Vector2d(spline_x(s), spline_y(s)), Eigen::Vector2d(point.x, point.y));
     }
 };
 

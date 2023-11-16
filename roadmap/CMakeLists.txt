@@ -8,7 +8,10 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/roadmap.cpp
   src/configuration.cpp
   src/reader.cpp
+  src/spline_fitter.cpp
   src/spline_converter.cpp
+  src/autoware/lanelet_fitter.cpp
+  src/autoware/autoware_lanelet_converter.cpp
   src/spline/spline.cpp
   src/spline/Clothoid.cpp
 )
