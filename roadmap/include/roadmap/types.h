@@ -33,6 +33,34 @@ struct Waypoint
         : x(_x), y(_y), theta(_theta), s(-1.)
     {
     }
+
+    Waypoint(const Eigen::Vector2d &point)
+    {
+        x = point(0);
+        y = point(1);
+    }
+
+    Eigen::Vector2d asVector2d() const { return Eigen::Vector2d(x, y); }
+};
+
+struct Line
+{
+    Eigen::Vector2d A;
+    double b;
+
+    Line(const Eigen::Vector2d &_A, const double _b) : A(_A), b(_b)
+    {
+    }
+
+    double distanceTo(const Waypoint &waypoint) const
+    {
+        return std::abs(A.transpose() * waypoint.asVector2d() - b);
+    }
+
+    double distanceTo(const Eigen::Vector2d &waypoint) const
+    {
+        return std::abs(A.transpose() * waypoint - b);
+    }
 };
 
 inline void WaypointVectorToGeometryPointVector(const std::vector<Waypoint> &waypoints,
@@ -133,9 +161,19 @@ struct Lane
         spline_fit = true;
     }
 
-    double distanceTo(double s, const Waypoint &point) const
+    double distanceTo(const double s, const Waypoint &point) const
     {
-        return RosTools::dist(Eigen::Vector2d(spline_x(s), spline_y(s)), Eigen::Vector2d(point.x, point.y));
+        return RosTools::dist(at(s), Eigen::Vector2d(point.x, point.y));
+    }
+
+    double distanceToLine(const double s, const Line &line) const
+    {
+        return line.distanceTo(at(s));
+    }
+
+    Eigen::Vector2d at(const double s) const
+    {
+        return Eigen::Vector2d(spline_x(s), spline_y(s));
     }
 };
 

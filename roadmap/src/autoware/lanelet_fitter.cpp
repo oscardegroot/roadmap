@@ -9,10 +9,10 @@ LaneletFitter::LaneletFitter(RoadmapConfig *config, PathWithLaneId &path_with_la
     Initialize(config);
 
     // Centerline
-    std::vector<Waypoint> center_lane_points;
+    // std::vector<Waypoint> center_lane_points;
     for (auto &point : path_with_lane_id.points)
-        center_lane_points.emplace_back(point.point.pose.position.x, point.point.pose.position.y, 0.);
-    FitSplineOnWaypoints(center_lane_points, output_center_lane_, center_lane);
+        input_center_lane_.emplace_back(point.point.pose.position.x, point.point.pose.position.y, 0.);
+    FitSplineOnWaypoints(input_center_lane_, output_center_lane_, center_lane);
 
     path_with_lane_id.points.clear();
     PathPointWithLaneId new_point;
@@ -28,30 +28,37 @@ LaneletFitter::LaneletFitter(RoadmapConfig *config, PathWithLaneId &path_with_la
 
     // 1) Fit splines
     // Right Boundary
-    std::vector<Waypoint> right_boundary_points;
     for (auto &point : path_with_lane_id.right_bound)
-        right_boundary_points.emplace_back(point.x, point.y, 0.);
+        input_right_boundary_.emplace_back(point.x, point.y, 0.);
+
+    std::vector<Waypoint> right_boundary_points = input_right_boundary_;
+    // RemoveCloseTogetherPoints(right_boundary_points);
+    RemoveCornerPoints(right_boundary_points);
     FitSplineOnWaypoints(right_boundary_points, output_right_boundary_, right_boundary);
 
     // Left Boundary
-    std::vector<Waypoint> left_boundary_points;
     for (auto &point : path_with_lane_id.left_bound)
-        left_boundary_points.emplace_back(point.x, point.y, 0.);
+        input_left_boundary_.emplace_back(point.x, point.y, 0.);
+
+    std::vector<Waypoint> left_boundary_points = input_left_boundary_;
+    // RemoveCloseTogetherPoints(left_boundary_points);
+    RemoveCornerPoints(left_boundary_points);
     FitSplineOnWaypoints(left_boundary_points, output_left_boundary_, left_boundary);
 
     // 2) Find out for each centerline waypoint, the closest point on the boundary
     output_left_boundary_.clear();
     for (auto &waypoint : output_center_lane_)
     {
-        output_left_boundary_.emplace_back(
-            FindPointOnSplineClosestTo(left_boundary, waypoint));
+        // output_left_boundary_.emplace_back(FindPointOnSplineClosestTo(left_boundary, waypoint));
+        output_left_boundary_.emplace_back(FindPointClosestToSplineOrthogonal(center_lane, left_boundary, waypoint));
     }
 
     output_right_boundary_.clear();
     for (auto &waypoint : output_center_lane_)
     {
-        output_right_boundary_.emplace_back(
-            FindPointOnSplineClosestTo(right_boundary, waypoint));
+        // output_right_boundary_.emplace_back(
+        // FindPointOnSplineClosestTo(right_boundary, waypoint));
+        output_right_boundary_.emplace_back(FindPointClosestToSplineOrthogonal(center_lane, right_boundary, waypoint));
     }
 
     WaypointVectorToGeometryPointVector(output_right_boundary_, path_with_lane_id.right_bound);
@@ -69,6 +76,13 @@ void LaneletFitter::Visualize(RosTools::ROSMarkerPublisher &markers)
     VisualizeLaneSpline(markers, right_boundary, 0);
     VisualizeLaneSpline(markers, left_boundary, 0);
 
+    if (config_->debug_output_)
+    {
+        int r = 0, g = 1., b = 0.;
+        VisualizePoints(markers, input_center_lane_, r, g, b);
+        VisualizePoints(markers, input_right_boundary_, r, g, b);
+        VisualizePoints(markers, input_left_boundary_, r, g, b);
+    }
     VisualizePoints(markers, output_center_lane_);
     VisualizePoints(markers, output_right_boundary_);
     VisualizePoints(markers, output_left_boundary_);

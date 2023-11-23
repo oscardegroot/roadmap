@@ -31,6 +31,7 @@ bool RoadmapConfig::initialize(rclcpp::Node::SharedPtr node) // const std::strin
   retrieveParameter(node, "roadmap.autoware.update_interval", autoware_update_interval_, 5.);
   retrieveParameter(node, "roadmap.autoware.forward_route", autoware_forward_distance_, 100.);
   retrieveParameter(node, "roadmap.autoware.backward_route", autoware_backward_distance_, 10.);
+  retrieveParameter(node, "roadmap.autoware.include_other_lane", autoware_include_other_lane_, false);
 
   success_ = true;
 

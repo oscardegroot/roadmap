@@ -61,7 +61,8 @@ void AutowareLaneletConverter::onOdometry(Odometry::ConstSharedPtr msg)
 {
     if (!odometry_ptr_)
     {
-        RCLCPP_INFO(logger_, "First odometry received");
+        if (config_ptr_->debug_output_)
+            RCLCPP_INFO(logger_, "First odometry received");
 
         odometry_ptr_ = msg; // Read odometry if it was not received yet
     }
@@ -71,7 +72,9 @@ void AutowareLaneletConverter::onOdometry(Odometry::ConstSharedPtr msg)
         rclcpp::Time cur_msg_time = msg->header.stamp;
         if ((cur_msg_time - previous_msg_time).seconds() > config_ptr_->autoware_update_interval_) // Otherwise, check how old the data is
         {
-            RCLCPP_INFO(logger_, "Updating odometry and route");
+            if (config_ptr_->debug_output_)
+                RCLCPP_INFO(logger_, "Updating odometry and route");
+
             odometry_ptr_ = msg; // And update if necessary
             if (route_ptr_ != nullptr)
                 onRoute(route_ptr_); // Computing a new part of the map
@@ -81,13 +84,15 @@ void AutowareLaneletConverter::onOdometry(Odometry::ConstSharedPtr msg)
 
 void AutowareLaneletConverter::onMap(HADMapBin::ConstSharedPtr msg)
 {
-    RCLCPP_INFO(logger_, "Map Received");
+    if (config_ptr_->debug_output_)
+        RCLCPP_INFO(logger_, "Map Received");
     map_ptr_ = msg;
 }
 
 void AutowareLaneletConverter::onRoute(LaneletRoute::ConstSharedPtr msg)
 {
-    RCLCPP_INFO(logger_, "Route Received");
+    if (config_ptr_->debug_output_)
+        RCLCPP_INFO(logger_, "Route Received");
 
     // We need the map to understand the route
     if (!map_ptr_)
@@ -100,7 +105,7 @@ void AutowareLaneletConverter::onRoute(LaneletRoute::ConstSharedPtr msg)
         RCLCPP_INFO_THROTTLE(logger_, *(roadmap_ptr_->get_clock()), 5000, "waiting for odometry msg...");
         return;
     }
-    RCLCPP_INFO(logger_, "Computing reference path");
+    RCLCPP_INFO(logger_, "Computing new lanelet route to the goal");
 
     route_ptr_ = msg;
 
@@ -110,7 +115,7 @@ void AutowareLaneletConverter::onRoute(LaneletRoute::ConstSharedPtr msg)
     /** @see behavior_path_planner/planner manager */
 
     geometry_msgs::msg::Pose cur_pose = odometry_ptr_->pose.pose;
-    PathWithLaneId reference_path{}; // The final reference path
+    PathWithLaneId reference_path{}, extended_reference_path{}; // The final reference path
 
     const auto backward_length = config_ptr_->autoware_backward_distance_; // How far back should the path go
     const auto forward_length = config_ptr_->autoware_forward_distance_;   // How far forward should the path go
@@ -123,12 +128,19 @@ void AutowareLaneletConverter::onRoute(LaneletRoute::ConstSharedPtr msg)
 
     const auto current_lanes = route_handler_->getLaneletSequence(
         closest_lane, cur_pose, -backward_length, forward_length);
-
     reference_path = route_handler_->getCenterLinePath(current_lanes, -backward_length, forward_length, true);
-    // How far apart are these points?
+    // getAllSharedLineStringLanelets
 
-    RCLCPP_INFO(logger_, "Loading reference path");
-    AddRoadBoundaries(reference_path, current_lanes);
+    // RCLCPP_INFO(logger_, "Loading reference path");
+    // Retrieve road boundaries from the reference path
+    double extend = 200.;
+    const auto extended_current_lanes = route_handler_->getLaneletSequence(
+        closest_lane, cur_pose, -backward_length - extend, forward_length + extend);
+    // extended_reference_path = route_handler_->getCenterLinePath(extended_current_lanes, -backward_length - extend, forward_length + extend, true);
+    AddRoadBoundaries(reference_path, extended_current_lanes);
+    // reference_path.left_bound = extended_reference_path.left_bound;
+    // reference_path.right_bound = extended_reference_path.right_bound;
+
     LaneletFitter lanelet_fitter(config_ptr_.get(), reference_path);
     lanelet_fitter.Visualize(*markers_);
 
@@ -143,7 +155,10 @@ void AutowareLaneletConverter::AddRoadBoundaries(PathWithLaneId &path, const std
     std::vector<geometry_msgs::msg::Point> left_points;
     for (auto &lanelet : lanelet_sequence)
     {
-        lanelet::ConstLineString2d bound = lanelet.leftBound2d();
+        // First get the left most lanelet
+        // auto left_most_lanelet = route_handler_->getAllSharedLineStringLanelets(lanelet, false, true, true);
+
+        lanelet::ConstLineString2d bound = lanelet.leftBound2d(); // I will assume left most is 0 index?
         for (auto &point : bound)
             left_points.push_back(lanelet::utils::conversion::toGeomMsgPt(point));
     }
@@ -153,7 +168,16 @@ void AutowareLaneletConverter::AddRoadBoundaries(PathWithLaneId &path, const std
     std::vector<geometry_msgs::msg::Point> right_points;
     for (auto &lanelet : lanelet_sequence)
     {
-        lanelet::ConstLineString2d bound = lanelet.rightBound2d();
+        // Get opposite lanes if they exist
+        auto right_most_lanelet = route_handler_->getAllRightSharedLinestringLanelets(lanelet, true, true);
+
+        std::cout << right_most_lanelet.size() << std::endl;
+        // For the opposite lanes, invert it then take the left bound? Or should it be the right bound
+        // THIS ONLY WORKS OCCASIONALLY ON HORIZONTAL ROADS. NOT CLEAR WHY YET -> USE THE TOP OF THE MAP, THE MAP IS PROPERLY MADE THERE
+        lanelet::ConstLineString2d bound = right_most_lanelet.size() > 0
+                                               ? right_most_lanelet[0].rightBound2d() // (is already inverted!)
+                                               : lanelet.rightBound2d();
+
         for (auto &point : bound)
             right_points.push_back(lanelet::utils::conversion::toGeomMsgPt(point));
     }

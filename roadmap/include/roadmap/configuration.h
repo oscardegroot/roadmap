@@ -53,6 +53,7 @@ public:
 
   double autoware_update_interval_;
   double autoware_forward_distance_, autoware_backward_distance_;
+  bool autoware_include_other_lane_;
 };
 
 #endif

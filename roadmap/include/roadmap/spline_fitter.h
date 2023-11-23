@@ -56,11 +56,21 @@ protected:
     void VisualizeLaneSpline(RosTools::ROSMarkerPublisher &markers, const Lane &lane);
     void VisualizeLaneSpline(RosTools::ROSMarkerPublisher &markers, const Lane &lane, int color_idx);
 
-    void VisualizePoints(RosTools::ROSMarkerPublisher &markers, const std::vector<Waypoint> &points);
+    void VisualizePoints(RosTools::ROSMarkerPublisher &markers, const std::vector<Waypoint> &points,
+                         int r = 0., int g = 0., int b = 0.);
 
     Waypoint FindPointOnSplineClosestTo(const Lane &lane, const Waypoint &point) const;
     double FindPointOnSplineClosestTo(const Lane &lane, const Waypoint &point,
                                       double low, double high, int num_recursions) const;
+
+    double FindPointOnSplineClosestToLine(const Lane &lane, const Waypoint &point,
+                                          double low, double high, int num_recursions,
+                                          const Line &line) const;
+
+    Waypoint FindPointClosestToSplineOrthogonal(const Lane &center_lane, const Lane &boundary, const Waypoint &point);
+
+    void RemoveCornerPoints(std::vector<Waypoint> &points) const;
+    void RemoveCloseTogetherPoints(std::vector<Waypoint> &points) const;
 
 protected:
     rclcpp::Logger logger_;

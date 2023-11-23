@@ -23,6 +23,7 @@ private:
     Lane center_lane, right_boundary, left_boundary;
 
     std::vector<Waypoint> output_center_lane_, output_right_boundary_, output_left_boundary_;
+    std::vector<Waypoint> input_center_lane_, input_right_boundary_, input_left_boundary_;
 };
 
 #endif

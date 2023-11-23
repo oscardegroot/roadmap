@@ -226,18 +226,82 @@ void SplineFitter::VisualizeLaneSpline(RosTools::ROSMarkerPublisher &markers,
 }
 
 void SplineFitter::VisualizePoints(RosTools::ROSMarkerPublisher &markers,
-                                   const std::vector<Waypoint> &points)
+                                   const std::vector<Waypoint> &points, int r, int g, int b)
 {
     RosTools::ROSPointMarker &cylinder = markers.getNewPointMarker("CYLINDER");
-    cylinder.setColor(0., 0., 0.);
-    cylinder.setScale(0.15, 0.15, 0.01);
+    cylinder.setColor(r, g, b);
+    cylinder.setScale(0.25, 0.25, 0.01);
 
     for (auto &point : points)
-        cylinder.addPointMarker(Eigen::Vector3d(point.x, point.y, 22.));
+        cylinder.addPointMarker(Eigen::Vector3d(point.x, point.y, 24.));
+}
+
+Waypoint SplineFitter::FindPointClosestToSplineOrthogonal(const Lane &center_lane, const Lane &boundary,
+                                                          const Waypoint &waypoint)
+{
+    // Find the orthogonal to `center_lane` at `waypoint`
+    double s_center = FindPointOnSplineClosestTo(center_lane, waypoint, 0., center_lane.length, 0);
+
+    // Construct the line Ax = b
+    Eigen::Vector2d A(center_lane.spline_x.deriv(1, s_center), center_lane.spline_y.deriv(1, s_center));
+    A.normalize();
+    double b = A.transpose() * waypoint.asVector2d();
+    Line orthogonal(A, b);
+
+    // For each section of the boundary, find out if it intersects the orthogonal
+    const double step_size = 1.;
+    std::vector<double> proposal_s;
+    for (double s = step_size; s < boundary.length - step_size; s += 2 * step_size)
+    {
+        if (std::abs(orthogonal.distanceTo(boundary.at(s))) < 4 * step_size) // If sufficiently close, run a bisection
+        {
+            // std::cout << "Searching between: " << std::max(0., s - step_size) << " and " << std::min(boundary.length, s + step_size) << std::endl;
+            double new_s = FindPointOnSplineClosestToLine(boundary, waypoint,
+                                                          std::max(0., s - step_size),
+                                                          std::min(boundary.length, s + step_size),
+                                                          0, orthogonal); // Find the actual s
+
+            // If it intersects
+            if (boundary.distanceToLine(new_s, orthogonal) < 1e-4)
+                proposal_s.push_back(new_s);
+        }
+    }
+
+    if (proposal_s.size() == 0)
+    {
+        // std::cout << "Warning: No proposals found for centerline s: " << s_center << std::endl;
+        double best_s = FindPointOnSplineClosestToLine(boundary, waypoint, 0., boundary.length, 0, orthogonal); // Find the actual s
+        return Waypoint(boundary.at(best_s));
+    }
+
+    double result_s = proposal_s[0];
+
+    if (proposal_s.size() > 1)
+    {
+        // Find the closest intersection
+        double distance = RosTools::dist(boundary.at(result_s), waypoint.asVector2d());
+        for (size_t i = 1; i < proposal_s.size(); i++)
+        {
+            double cur_s = proposal_s[i];
+
+            // Distance from the initial centerline point
+            double new_dist = RosTools::dist(boundary.at(cur_s), waypoint.asVector2d());
+            if (new_dist < distance)
+            {
+                distance = new_dist;
+                result_s = cur_s;
+            }
+        }
+    }
+
+    return Waypoint(boundary.at(result_s)); // Return the waypoint at that s
 }
 
 Waypoint SplineFitter::FindPointOnSplineClosestTo(const Lane &lane, const Waypoint &point) const
 {
+
+    // For all waypoints that define the lane, find the closest two
+
     double s = FindPointOnSplineClosestTo(lane, point, 0., lane.length, 0);
     return Waypoint(lane.spline_x(s), lane.spline_y(s), 0.);
 }
@@ -261,4 +325,95 @@ double SplineFitter::FindPointOnSplineClosestTo(const Lane &lane, const Waypoint
         return FindPointOnSplineClosestTo(lane, point, low, mid, num_recursions + 1);
     else
         return FindPointOnSplineClosestTo(lane, point, mid, high, num_recursions + 1);
+}
+
+double SplineFitter::FindPointOnSplineClosestToLine(const Lane &lane, const Waypoint &point,
+                                                    double low, double high, int num_recursions,
+                                                    const Line &line) const
+{
+    // Stop after x recursions
+    if (num_recursions > 20)
+        return (low + high) / 2.;
+
+    // Compute a middle s value
+    double mid = (low + high) / 2.;
+
+    // Compute the distance to the spline for high/low
+    double value_low = lane.distanceToLine(low, line);
+    double value_high = lane.distanceToLine(high, line);
+
+    // Check the next closest value
+    if (value_low < value_high)
+        return FindPointOnSplineClosestToLine(lane, point, low, mid, num_recursions + 1, line);
+    else
+        return FindPointOnSplineClosestToLine(lane, point, mid, high, num_recursions + 1, line);
+}
+
+void SplineFitter::RemoveCornerPoints(std::vector<Waypoint> &points) const
+{
+    // size_t length = points.size();
+    // for (size_t i = length - 2; i > 1; i--) // Iterate backwards and skip first and last
+    // {
+    //     // Detect a corner
+    //     const auto prev_point = points[i - 1].asVector2d();
+    //     const auto cur_point = points[i].asVector2d();
+    //     const auto next_point = points[i + 1].asVector2d();
+
+    //     Eigen::Vector2d a = cur_point - prev_point;
+    //     Eigen::Vector2d b = next_point - cur_point;
+
+    //     double angle = std::acos(a.dot(b) / (a.norm() * b.norm()));
+    //     std::cout << angle << std::endl;
+    //     if (angle != angle) // If nan, continue
+    //         continue;
+
+    //     if (std::abs(angle) > 0.8 * M_PI_2) // || a.norm() < 1e-7)
+    //     {
+    //         std::cout << "REMOVED CORNER\n";
+    //         points.erase(points.begin() + i);
+    //     }
+    // }
+    std::vector<Waypoint> out;
+    out.reserve(points.size());
+    out.push_back(points[0]);
+    for (size_t i = 1; i < points.size() - 1; i++)
+    {
+        // Detect a corner
+        const auto prev_point = points[i - 1].asVector2d();
+        const auto cur_point = points[i].asVector2d();
+        const auto next_point = points[i + 1].asVector2d();
+
+        Eigen::Vector2d a = cur_point - prev_point;
+        Eigen::Vector2d b = next_point - cur_point;
+
+        double angle = std::acos(a.dot(b) / (a.norm() * b.norm()));
+
+        if (angle == angle) // If not nan
+        {
+            if (std::abs(angle) > 0.8 * M_PI_2) // || a.norm() < 1e-7)
+                continue;
+        }
+
+        out.push_back(points[i]);
+    }
+    out.push_back(points.back());
+    points = out;
+}
+
+void SplineFitter::RemoveCloseTogetherPoints(std::vector<Waypoint> &points) const
+{
+    size_t length = points.size();
+    for (size_t i = length - 2; i > 0; i--) // Iterate backwards and skip first and last
+    {
+        // Detect a corner
+        const auto prev_point = points[i - 1].asVector2d();
+        const auto cur_point = points[i].asVector2d();
+
+        if ((cur_point - prev_point).norm() < config_->minimum_waypoint_distance_)
+        {
+            std::cout << "removed points close together\n";
+
+            points.erase(points.begin() + i);
+        }
+    }
 }
