@@ -2,7 +2,6 @@
 #define __ROADMAP_H__
 
 #include <ros/ros.h>
-#include <ros/console.h>
 #include <string>
 
 #include <geometry_msgs/PoseStamped.h>

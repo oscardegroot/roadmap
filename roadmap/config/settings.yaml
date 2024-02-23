@@ -3,7 +3,8 @@ roadmap:
   debug_output: false   # Print debug information
   update_frequency: 1  # (Hz) Publish map information at this rate
   map_package_name: 'roadmap'         # Package where the map is
-  map_file_name: 'maps/straight.xml'  # Name of the map file
+  # map_file_name: 'maps/straight.xml'  # Name of the map file
+  map_file_name: 'maps/mobile_robotics_lab/straight.xml'  # Name of the map file
   # map_file_name: 'maps/test_map.xml'  # Name of the map file
   # map_file_name: 'maps/test_map_rotated.xml'  # Name of the map file
   # map_file_name: "maps/test_map.yaml"
@@ -13,7 +14,7 @@ roadmap:
   spline:
     fit_clothoid: true             # Fits a clothoid before fitting cubic splines if TRUE
     minimum_waypoint_distance: 2.0  # Ignore waypoints closer than this distance together
-    spline_sample_distance: 5       # Distance between sampled waypoints on the spline
+    spline_sample_distance: 5.0       # Distance between sampled waypoints on the spline
     clothoid_point_per_xm: 0.25        # Distance forced between points on the Clothoid
 
   # === Visual settings === #
