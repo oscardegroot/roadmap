@@ -1,8 +1,12 @@
 #include "reader.h"
 
+#include <ros_tools/paths.h>
+#include <ros_tools/convertions.h>
+#include <ros_tools/math.h>
+
 void Reader::Read()
 {
-    std::string map_file = ros::package::getPath(config_->map_package_name_) + "/" + config_->map_file_name_;
+    std::string map_file = getPackagePath(config_->map_package_name_) + "/" + config_->map_file_name_; // ros::package::getPath(config_->map_package_name_) + "/" + config_->map_file_name_;
     Read(map_file);
 }
 
@@ -17,7 +21,7 @@ void Reader::Read(const std::string &file_name)
     // If the path does not contain the package, add it
     std::string map_file;
     if (file_name.find("//" + config_->map_package_name_ + "//") != std::string::npos)
-        map_file = ros::package::getPath(config_->map_package_name_) + "/" + file_name;
+        map_file = getPackagePath(config_->map_package_name_) + "/" + file_name;
     else
         map_file = file_name;
 
@@ -34,7 +38,10 @@ void Reader::Read(const std::string &file_name)
 
 void Reader::Read(const std::string &&file_name)
 {
-    std::string map_file = ros::package::getPath(config_->map_package_name_) + "/" + file_name;
+    LOG_HOOK();
+
+    std::string map_file = getPackagePath(config_->map_package_name_) + "/" + file_name;
+    LOG_VALUE("map file", map_file);
     Read(map_file);
 }
 
@@ -84,38 +91,39 @@ void Reader::ReadXML(const std::string &file)
 
 void Reader::ReadYAML(const std::string &file)
 {
-    // std::cout << std::string("rosparam load ") + file << std::endl;
-    if (system(std::string("rosparam load " + file).c_str()))
-        return;
+    LOG_HOOK();
+    // // std::cout << std::string("rosparam load ") + file << std::endl;
+    // if (system(std::string("rosparam load " + file).c_str()))
+    //     return;
 
-    // Assume one Way object as reference path
+    // // Assume one Way object as reference path
 
-    ros::NodeHandle nh;
+    // ros::NodeHandle nh;
 
-    std::vector<double> x, y, theta;
-    RoadmapConfig::retrieveParameter(nh, "global_path/x", x);
-    RoadmapConfig::retrieveParameter(nh, "global_path/y", y);
-    RoadmapConfig::retrieveParameter(nh, "global_path/theta", theta);
-    assert(x.size() == y.size());
-    assert(y.size() == theta.size());
+    // std::vector<double> x, y, theta;
+    // RoadmapConfig::retrieveParameter(nh, "global_path/x", x);
+    // RoadmapConfig::retrieveParameter(nh, "global_path/y", y);
+    // RoadmapConfig::retrieveParameter(nh, "global_path/theta", theta);
+    // assert(x.size() == y.size());
+    // assert(y.size() == theta.size());
 
-    // Create a way object
-    Way new_way;
-    double angle = RosTools::quaternionToAngle(offset_);
-    Eigen::MatrixXd R = RosTools::rotationMatrixFromHeading(-angle); // Rotate to the offset
+    // // Create a way object
+    // Way new_way;
+    // double angle = RosTools::quaternionToAngle(offset_);
+    // Eigen::MatrixXd R = RosTools::rotationMatrixFromHeading(-angle); // Rotate to the offset
 
-    for (size_t i = 0; i < x.size(); i++)
-    {
-        Eigen::Vector2d new_pos = R * Eigen::Vector2d(x[i], y[i]);
+    // for (size_t i = 0; i < x.size(); i++)
+    // {
+    //     Eigen::Vector2d new_pos = R * Eigen::Vector2d(x[i], y[i]);
 
-        new_way.AddNode(Node(offset_.position.x + new_pos(0), offset_.position.y + new_pos(1), theta[i] + angle)); // Create nodes
-    }
-    int id = 0;
-    // Add a regular road and sidewalk by default
-    new_way.AddLane("road", 4.0, true, id);
-    new_way.AddLane("sidewalk", 2.0, true, id);
-    map_.ways.push_back(new_way);
-    ROADMAP_INFO("YAML Read.");
+    //     new_way.AddNode(Node(offset_.position.x + new_pos(0), offset_.position.y + new_pos(1), theta[i] + angle)); // Create nodes
+    // }
+    // int id = 0;
+    // // Add a regular road and sidewalk by default
+    // new_way.AddLane("road", 4.0, true, id);
+    // new_way.AddLane("sidewalk", 2.0, true, id);
+    // map_.ways.push_back(new_way);
+    // ROADMAP_INFO("YAML Read.");
 }
 
 void Reader::ReadOSM(const std::string &file)

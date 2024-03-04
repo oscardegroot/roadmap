@@ -1,10 +1,12 @@
 #include "spline_converter.h"
 
+#include <ros_tools/visuals.h>
+
 void SplineConverter::Initialize(ros::NodeHandle &nh, RoadmapConfig *config)
 {
-    input_map_markers_.reset(new RosTools::ROSMarkerPublisher(nh, "roadmap/input_map", "map", 500));
-    output_map_markers_.reset(new RosTools::ROSMarkerPublisher(nh, "roadmap/output_map", "map", 2000));
-    arrow_markers_.reset(new RosTools::ROSMarkerPublisher(nh, "roadmap/output_map_arrows", "map", 2000));
+    // input_map_markers_.reset(new RosTools::ROSMarkerPublisher(nh, "roadmap/input_map", "map", 500));
+    // output_map_markers_.reset(new RosTools::ROSMarkerPublisher(nh, "roadmap/output_map", "map", 2000));
+    // arrow_markers_.reset(new RosTools::ROSMarkerPublisher(nh, "roadmap/output_map_arrows", "map", 2000));
 
     config_ = config;
 
@@ -42,7 +44,10 @@ Map &SplineConverter::ConvertMap(Map &map)
             for (auto &lane : way.lanes)
             {
                 for (auto &node : lane.nodes)
+                {
+                    (void)node;
                     total_waypoints++;
+                }
             }
         }
         ROADMAP_INFO_STREAM("Done converting map (" << total_waypoints << " waypoints)");
@@ -57,7 +62,10 @@ void SplineConverter::VisualizeMap()
     bool plot_arrows = false;
     bool plot_cubes = true;
 
-    RosTools::ROSPointMarker &arrow = arrow_markers_->getNewPointMarker("ARROW"); // Note: is expensive to DRAW, only show when debugging.
+    auto &output_map_visuals = VISUALS.getPublisher("output_map");
+
+    auto &arrow_visuals = VISUALS.getPublisher("arrows");
+    RosTools::ROSPointMarker &arrow = arrow_visuals.getNewPointMarker("ARROW"); // Note: is expensive to DRAW, only show when debugging.
 
     double scale = 0.2 * config_->scale_;
 
@@ -70,7 +78,7 @@ void SplineConverter::VisualizeMap()
             if (lane.type == roadmap_msgs::RoadPolyline::LANECENTER_FREEWAY)
                 continue;
 
-            RosTools::ROSMultiplePointMarker &cube = output_map_markers_->getNewMultiplePointMarker("CUBE"); // Batch rendering (same color and scale)
+            RosTools::ROSMultiplePointMarker &cube = output_map_visuals.getNewMultiplePointMarker("CUBE"); // Batch rendering (same color and scale)
 
             if (plot_cubes)
                 cube.setScale(scale, scale, scale);
@@ -114,17 +122,16 @@ void SplineConverter::VisualizeMap()
     }
 
     // For multiple point markers we need to enforce the draw call
-
-    output_map_markers_->publish();
+    output_map_visuals.publish();
     if (plot_arrows)
-        arrow_markers_->publish();
+        arrow_visuals.publish();
 }
 
 void SplineConverter::VisualizeInputData(Map &map)
 {
     ROADMAP_INFO("Visualizing input data");
-
-    RosTools::ROSPointMarker &unique_cubes = input_map_markers_->getNewPointMarker("CUBE"); // Unique per color
+    auto &input_map_visuals = VISUALS.getPublisher("input_map");
+    RosTools::ROSPointMarker &unique_cubes = input_map_visuals.getNewPointMarker("CUBE"); // Unique per color
 
     double scale;
 
@@ -134,7 +141,7 @@ void SplineConverter::VisualizeInputData(Map &map)
         {
             const Lane &lane = way.lanes[i];
 
-            RosTools::ROSMultiplePointMarker &cube = input_map_markers_->getNewMultiplePointMarker("CUBE"); // Batch rendering (same color and scale)
+            RosTools::ROSMultiplePointMarker &cube = input_map_visuals.getNewMultiplePointMarker("CUBE"); // Batch rendering (same color and scale)
 
             bool is_first_node = true;
             for (const Node &node : lane.nodes)
@@ -172,12 +179,14 @@ void SplineConverter::VisualizeInputData(Map &map)
 
     // For multiple point markers we need to enforce the draw call
 
-    input_map_markers_->publish();
+    input_map_visuals.publish();
 }
 
 void SplineConverter::VisualizeLaneSpline(const Lane &lane)
 {
-    RosTools::ROSLine &line = output_map_markers_->getNewLine();
+    auto &output_map_visuals = VISUALS.getPublisher("output_map");
+
+    RosTools::ROSLine &line = output_map_visuals.getNewLine();
     line.setColorInt(lane.type, 20, RosTools::Colormap::VIRIDIS); //(double)lane.type / (double)20);
                                                                   // line.setColor(0.5, 0.0, 0.0);
 

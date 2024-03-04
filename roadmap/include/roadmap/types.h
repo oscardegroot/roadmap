@@ -8,8 +8,8 @@
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/Pose.h"
 
-#include <spline/spline.h>
-#include "ros_tools/helpers.h"
+#include <ros_tools/convertions.h>
+#include <ros_tools/spline.h>
 
 // Radius of Earth
 #define GLOBE_RADIUS 6371.0e3

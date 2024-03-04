@@ -1,28 +1,29 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+#include "roadmap/helpers.h"
+
 #include <ros/ros.h>
 #include <string>
 #include <vector>
-#include "helpers.h"
 
 class RoadmapConfig
 {
 
   /**
- * @brief Class for retrieving configuration parameters
- * 
- */
+   * @brief Class for retrieving configuration parameters
+   *
+   */
 
 public:
   RoadmapConfig();
   ~RoadmapConfig();
 
   /**
-     * @brief intialize:  check parameters on parameter server and read from there
-     * @param node_handle_name: node handler initialize from name, as parameter set inside that name
-     * @return true all parameter initialize successfully else false
-     */
+   * @brief intialize:  check parameters on parameter server and read from there
+   * @param node_handle_name: node handler initialize from name, as parameter set inside that name
+   * @return true all parameter initialize successfully else false
+   */
   bool initialize();
 
   // High-level Parameters

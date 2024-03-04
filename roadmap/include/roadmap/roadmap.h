@@ -5,6 +5,7 @@
 #include <string>
 
 #include <geometry_msgs/PoseStamped.h>
+#include <std_msgs/Empty.h>
 #include "roadmap_msgs/RoadPolylineArray.h"
 #include "roadmap_msgs/RoadPolyline.h"
 
@@ -74,11 +75,6 @@ private:
      * @brief Convert the map and create ros messages
      */
     void ConvertMap();
-
-    // /**
-    //  * @brief Reset to load and apply changed map
-    //  */
-    // void Reset();
 };
 
 #endif // __ROADMAP_H__

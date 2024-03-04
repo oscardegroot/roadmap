@@ -1,5 +1,7 @@
 #include "roadmap.h"
 
+#include <ros_tools/visuals.h>
+
 Roadmap::Roadmap()
 {
     // Initialize the configuration
@@ -7,6 +9,8 @@ Roadmap::Roadmap()
     config_->initialize();
 
     reader_.reset(new Reader(config_.get()));
+
+    VISUALS.init(&nh_);
 
     // Subscribers
     waypoints_sub_ = nh_.subscribe(config_->external_waypoint_topic_, 1, &Roadmap::WaypointCallback, this); // Subscriber for waypoints (forwarded to the reader)
@@ -116,17 +120,14 @@ void Roadmap::ConvertMap()
 void Roadmap::Poll(const ros::TimerEvent &event)
 {
     ROADMAP_INFO("====== START LOOP ======");
-    runs_++;
-    // if (runs_ < 10)
-    // {
-    // Should happen by request?
-    map_pub_.publish(road_msg_);      // publish
-    reference_pub_.publish(ref_msg_); // publish
 
-    // }
+    runs_++;
+
+    map_pub_.publish(road_msg_);
+    reference_pub_.publish(ref_msg_);
+
     ROADMAP_INFO("Published polylines and reference");
-    // Visualize the map
-    // Two functions here
+
     spline_converter_.VisualizeInputData(reader_->GetMap());
     spline_converter_.VisualizeMap();
 

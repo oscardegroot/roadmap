@@ -7,8 +7,6 @@
 #include <map>
 #include <Eigen/Eigen>
 
-#include <ros_tools/ros_visuals.h>
-
 // spline libraries
 #include <spline.h>
 #include <Clothoid.h>
@@ -68,12 +66,12 @@ public:
     void VisualizeMap();
 
 private:
-    RoadmapConfig *config_; /** parameters */
+    RoadmapConfig *config_{nullptr}; /** parameters */
 
     /** Two classes for visualization of the map */
-    std::unique_ptr<RosTools::ROSMarkerPublisher> input_map_markers_;
-    std::unique_ptr<RosTools::ROSMarkerPublisher> output_map_markers_;
-    std::unique_ptr<RosTools::ROSMarkerPublisher> arrow_markers_;
+    // std::unique_ptr<RosTools::ROSMarkerPublisher> input_map_markers_;
+    // std::unique_ptr<RosTools::ROSMarkerPublisher> output_map_markers_;
+    // std::unique_ptr<RosTools::ROSMarkerPublisher> arrow_markers_;
 
     /**
      * @brief Fit a spline to a particular lane

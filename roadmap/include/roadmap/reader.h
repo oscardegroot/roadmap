@@ -1,22 +1,19 @@
 #ifndef __READER_H__
 #define __READER_H__
 
-#include <ros/ros.h>
-#include <ros/package.h>
-#include <string>
-#include <vector>
-#include <stdlib.h> /* atoi */
-#include <map>
+#include <rapidxml_utils.hpp>
+
+#include <roadmap/types.h>
+#include <roadmap/configuration.h>
 
 #include <nav_msgs/Path.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 
-#include "rapidxml_utils.hpp"
-
-#include "types.h"
-#include "configuration.h"
-#include "ros_tools/helpers.h"
+#include <string>
+#include <vector>
+#include <stdlib.h> /* atoi */
+#include <map>
 
 class Reader
 {

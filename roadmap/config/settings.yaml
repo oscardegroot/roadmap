@@ -7,8 +7,6 @@ roadmap:
   map_file_name: 'maps/mobile_robotics_lab/straight.xml'  # Name of the map file
   # map_file_name: 'maps/test_map.xml'  # Name of the map file
   # map_file_name: 'maps/test_map_rotated.xml'  # Name of the map file
-  # map_file_name: "maps/test_map.yaml"
-  # map_file_name: 'maps/test_map.osm'
 
   # === Spline settings === #
   spline:
