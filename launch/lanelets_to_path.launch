@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="config_file" default="$(find-pkg-share lanelets_to_path)/config/settings.yaml" />
+
+    <node pkg="lanelets_to_path" exec="lanelets_to_path_node" name="lanelets_to_path_node" respawn="false" output="screen">
+        <param from="$(find-pkg-share lanelets_to_path)/config/settings.yaml"/>
+        <remap from="~/input/vector_map" to="/map/vector_map"/>
+        <remap from="~/input/route" to="/planning/mission_planning/route"/>
+        <remap from="~/input/odometry" to="/localization/kinematic_state"/>
+    </node>
+</launch>  

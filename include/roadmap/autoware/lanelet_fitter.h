@@ -17,7 +17,7 @@ public:
     LaneletFitter(RoadmapConfig *config, PathWithLaneId &path_with_lane_id);
 
 public:
-    void Visualize(RosTools::ROSMarkerPublisher &markers);
+    void Visualize();
 
 private:
     Lane center_lane, right_boundary, left_boundary;

@@ -8,6 +8,7 @@
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/point.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 
 #include <route_handler/route_handler.hpp>
 #include <lanelet2_extension/utility/query.hpp>              // See route-handler
@@ -33,7 +34,7 @@ class AutowareLaneletConverter : public rclcpp::Node
 {
 public:
     AutowareLaneletConverter();
-
+    void initialize();
     // Trigger a map recompute when respawning
     void onInitialPose(PoseWithCovarianceStamped::ConstSharedPtr msg);
     void onOdometry(Odometry::ConstSharedPtr msg);
@@ -46,9 +47,6 @@ private:
     void AddRoadBoundaries(PathWithLaneId &path, const std::vector<lanelet::ConstLanelet> &lanelet_sequence);
 
     std::shared_ptr<RoadmapConfig> config_ptr_;
-    rclcpp::Logger logger_;
-
-    std::unique_ptr<RosTools::ROSMarkerPublisher> markers_;
 
     rclcpp::Subscription<HADMapBin>::SharedPtr vector_map_subscriber_; /** Subscriber for external waypoints */
     HADMapBin::ConstSharedPtr map_ptr_{nullptr};

@@ -1,5 +1,4 @@
 
-#include <roadmap/roadmap.h>
 #include <roadmap/autoware/autoware_lanelet_converter.h>
 // #include <roadmap/autoware/autoware_path_forward_interface.h>
 
@@ -12,8 +11,9 @@ int main(int argc, char *argv[])
 
   // auto autoware_interface = std::make_shared<AutowarePathForwardInterface>(roadmap);
   auto autoware_interface = std::make_shared<AutowareLaneletConverter>();
+  autoware_interface->initialize();
 
-  rclcpp::spin(roadmap);
+  rclcpp::spin(autoware_interface);
 
   rclcpp::shutdown();
 

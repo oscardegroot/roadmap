@@ -1,5 +1,7 @@
 #include <roadmap/spline_converter.h>
 
+#include <ros_tools/logging.h>
+
 SplineConverter::SplineConverter()
 {
 }
@@ -14,18 +16,18 @@ void SplineConverter::Initialize(rclcpp::Node *node, RoadmapConfig *config)
 
     config_ = config;
 
-    ROADMAP_WARN(logger_, "Initialized Spline Converter");
+    LOG_WARN("Initialized Spline Converter");
 }
 
 Map &SplineConverter::ConvertMap(Map &map)
 {
     if (map.ways.size() == 0)
     {
-        ROADMAP_WARN(logger_, "Tried to convert an empty map (returning)")
+        LOG_WARN("Tried to convert an empty map (returning)");
         return converted_map_; // Needs to also give an error
     }
 
-    ROADMAP_INFO_STREAM(logger_, "Fitting splines over " << map.ways.size() << " ways");
+    LOG_INFO("Fitting splines over " << map.ways.size() << " ways");
     // VisualizeMap(map);
 
     // First fit splines on all defined ways
@@ -51,7 +53,7 @@ Map &SplineConverter::ConvertMap(Map &map)
                     total_waypoints++;
             }
         }
-        ROADMAP_INFO_STREAM(logger_, "Done converting map (" << total_waypoints << " waypoints)");
+        LOG_INFO("Done converting map (" << total_waypoints << " waypoints)");
     }
 
     return converted_map_;
@@ -87,7 +89,7 @@ void SplineConverter::VisualizeReference(const nav_msgs::msg::Path &ref_msg)
 
 void SplineConverter::VisualizeMap()
 {
-    ROADMAP_INFO(logger_, "Visualizing the map");
+    LOG_INFO("Visualizing the map");
     bool plot_arrows = false;
     bool plot_cubes = true;
 
@@ -101,7 +103,7 @@ void SplineConverter::VisualizeMap()
         {
             const Lane &lane = way.lanes[i];
 
-            if (lane.type == roadmap_msgs::msg::RoadPolyline::LANECENTER_FREEWAY)
+            if (lane.type == 1)
                 continue;
 
             RosTools::ROSMultiplePointMarker &cube = output_map_markers_->getNewMultiplePointMarker("CUBE"); // Batch rendering (same color and scale)
@@ -109,8 +111,8 @@ void SplineConverter::VisualizeMap()
             if (plot_cubes)
                 cube.setScale(scale, scale, scale);
 
-            const Node *prev_node = nullptr;
-            for (const Node &node : lane.nodes)
+            const RoadNode *prev_node = nullptr;
+            for (const RoadNode &node : lane.nodes)
             {
                 if (plot_cubes)
                     cube.setColorInt(lane.type, 20, RosTools::Colormap::VIRIDIS);
@@ -157,7 +159,7 @@ void SplineConverter::VisualizeMap()
 void SplineConverter::VisualizeInputData(Map &map)
 {
 
-    ROADMAP_INFO(logger_, "Visualizing input data");
+    LOG_INFO("Visualizing input data");
 
     RosTools::ROSPointMarker &unique_cubes = input_map_markers_->getNewPointMarker("CUBE"); // Unique per color
 
@@ -172,7 +174,7 @@ void SplineConverter::VisualizeInputData(Map &map)
             RosTools::ROSMultiplePointMarker &cube = input_map_markers_->getNewMultiplePointMarker("CUBE"); // Batch rendering (same color and scale)
 
             bool is_first_node = true;
-            for (const Node &node : lane.nodes)
+            for (const RoadNode &node : lane.nodes)
             {
                 scale = 0.75 * config_->scale_;
 

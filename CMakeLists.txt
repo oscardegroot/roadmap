@@ -8,16 +8,18 @@ endif()
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter)
 endif()
-add_compile_options(-DCMAKE_BUILD_TYPE=Release)
 
 ## DEPENDENCIES ##
 set(DEPENDENCIES
 rclcpp
 geometry_msgs
+nav_msgs
 std_msgs
-asr_rapidxml
-roadmap_msgs
 ros_tools
+route_handler
+autoware_auto_planning_msgs
+autoware_auto_mapping_msgs
+autoware_planning_msgs
 )
 
 find_package(ament_cmake REQUIRED)
@@ -26,9 +28,12 @@ find_package(rclcpp REQUIRED)
 find_package(ros_tools REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(roadmap_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(route_handler REQUIRED)
+find_package(autoware_auto_planning_msgs REQUIRED)
+find_package(autoware_auto_mapping_msgs REQUIRED)
+find_package(autoware_planning_msgs REQUIRED)
 
-find_package(asr_rapidxml REQUIRED)
 find_package(ros_tools REQUIRED)
 
 # find_package(eigen3_cmake_module REQUIRED)
@@ -46,13 +51,13 @@ include_directories(
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
-  #  src/roadmap.cpp
    src/configuration.cpp
-  #  src/reader.cpp
    src/spline_converter.cpp
    src/spline/spline.cpp
    src/spline/Clothoid.cpp
    src/spline_fitter.cpp
+   src/autoware/autoware_lanelet_converter.cpp
+   src/autoware/lanelet_fitter.cpp
 )
 target_include_directories(${PROJECT_NAME}
   PUBLIC
@@ -85,12 +90,6 @@ install(DIRECTORY config
   DESTINATION share/${PROJECT_NAME})
 
 install(DIRECTORY launch
-  DESTINATION share/${PROJECT_NAME})
-
-install(DIRECTORY maps
-  DESTINATION share/${PROJECT_NAME})
-
-install(DIRECTORY rviz
   DESTINATION share/${PROJECT_NAME})
 
 # ament_export_include_directories(include/${PROJECT_NAME})

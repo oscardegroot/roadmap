@@ -5,7 +5,6 @@
 
 #include <string>
 #include <vector>
-#include "helpers.h"
 
 class RoadmapConfig
 {
@@ -21,7 +20,7 @@ public:
   bool declared_ = false;
 
   /**
-   * @brief intialize:  check parameters on parameter server and read from there
+   * @brief initialize:  check parameters on parameter server and read from there
    * @param node_handle_name: node handler initialize from name, as parameter set inside that name
    * @return true all parameter initialize successfully else false
    */

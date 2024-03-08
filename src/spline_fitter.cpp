@@ -1,6 +1,8 @@
 #include <roadmap/spline_fitter.h>
 #include <spline/Clothoid.h>
 
+#include <ros_tools/logging.h>
+
 SplineFitter::SplineFitter() : logger_(rclcpp::get_logger("roadmap.spline_fitter"))
 {
 }
@@ -17,7 +19,7 @@ void SplineFitter::FitSplineOnLane(Lane &lane)
     std::vector<Waypoint> waypoints;
     waypoints.reserve(lane.nodes.size());
 
-    for (Node &node : lane.nodes)
+    for (RoadNode &node : lane.nodes)
     {
         // Retrieve waypoints
         waypoints.emplace_back(node.x,
@@ -32,7 +34,7 @@ void SplineFitter::FitSplineOnLane(Lane &lane)
     // Modify the way object
     lane.nodes.clear();
     for (Waypoint &waypoint : spline_waypoints)
-        lane.nodes.push_back(Node(waypoint.x, waypoint.y, waypoint.theta));
+        lane.nodes.push_back(RoadNode(waypoint.x, waypoint.y, waypoint.theta));
 }
 
 void SplineFitter::FitSplineOnWaypoints(const std::vector<Waypoint> &waypoints, std::vector<Waypoint> &waypoints_out, Lane &lane)
@@ -57,7 +59,7 @@ void SplineFitter::FitSplineOnWaypoints(const std::vector<Waypoint> &waypoints, 
 
 void SplineFitter::FitClothoid(const std::vector<Waypoint> &waypoints, std::vector<double> &x, std::vector<double> &y, std::vector<double> &s)
 {
-    ROADMAP_INFO(logger_, "Generating path with clothoid interpolation...");
+    LOG_INFO("Generating path with clothoid interpolation...");
 
     double length = 0;
     double k, dk, L;
@@ -112,7 +114,7 @@ void SplineFitter::FitClothoid(const std::vector<Waypoint> &waypoints, std::vect
 
 void SplineFitter::ConvertWaypointsToVectors(const std::vector<Waypoint> &waypoints, std::vector<double> &x, std::vector<double> &y, std::vector<double> &s)
 {
-    ROADMAP_INFO(logger_, "Generating spline without clothoid interpolation");
+    LOG_DEBUG("Generating spline without clothoid interpolation");
     assert(waypoints.size() > 1);
 
     double length = 0.;
@@ -187,7 +189,7 @@ void SplineFitter::FitCubicSpline(Lane &lane, std::vector<Waypoint> &waypoints_o
             std::atan2(lane.spline_y.deriv(1, length), lane.spline_x.deriv(1, length)));
     }
 
-    ROADMAP_INFO(logger_, "Cubic Spline Fitted");
+    LOG_DEBUG("Cubic Spline Fitted");
 }
 
 void SplineFitter::VisualizeLaneSpline(RosTools::ROSMarkerPublisher &markers,
@@ -210,7 +212,7 @@ void SplineFitter::VisualizeLaneSpline(RosTools::ROSMarkerPublisher &markers,
     for (double s = 0.; s < lane.length; s += 0.1) // Step through the spline
     {
         // Do not plot the middle of the roads (just the edges)
-        if (lane.type == roadmap_msgs::msg::RoadPolyline::LANECENTER_FREEWAY)
+        if (lane.type == 1)
             continue;
 
         cur.x = lane.spline_x(s);

@@ -14,8 +14,6 @@ class SplineFitter
 public:
     SplineFitter();
     void Initialize(RoadmapConfig *config);
-
-protected:
     /**
      * @brief Fit a spline to a particular lane
      * @see types.h
@@ -23,6 +21,7 @@ protected:
      */
     void FitSplineOnLane(Lane &lane);
 
+protected:
     void FitSplineOnWaypoints(const std::vector<Waypoint> &waypoints, std::vector<Waypoint> &waypoints_out, Lane &lane);
 
     /**

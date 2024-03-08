@@ -4,7 +4,6 @@
 #include <roadmap/spline_fitter.h>
 #include <roadmap/configuration.h>
 #include <roadmap/types.h>
-#include <roadmap/helpers.h>
 
 #include <ros_tools/ros_visuals.h>
 
