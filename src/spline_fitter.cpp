@@ -1,4 +1,4 @@
-#include <roadmap/spline_fitter.h>
+#include <lanelets_to_path/spline_fitter.h>
 #include <spline/Clothoid.h>
 
 #include <ros_tools/logging.h>

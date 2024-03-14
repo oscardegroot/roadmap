@@ -14,7 +14,7 @@
 #include <lanelet2_extension/utility/query.hpp>              // See route-handler
 #include <lanelet2_extension/utility/message_conversion.hpp> // See route-handler
 
-#include <roadmap/autoware/lanelet_fitter.h>
+#include <lanelets_to_path/autoware/lanelet_fitter.h>
 
 #include <memory>
 

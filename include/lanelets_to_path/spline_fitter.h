@@ -3,8 +3,8 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <roadmap/types.h>
-#include <roadmap/configuration.h>
+#include <lanelets_to_path/types.h>
+#include <lanelets_to_path/configuration.h>
 
 #include <ros_tools/ros_visuals.h>
 

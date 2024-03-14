@@ -1,5 +1,5 @@
 
-#include <roadmap/configuration.h>
+#include <lanelets_to_path/configuration.h>
 
 RoadmapConfig::RoadmapConfig()
 {

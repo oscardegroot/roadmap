@@ -3,8 +3,8 @@
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 
-#include <roadmap/spline_fitter.h>
-#include <roadmap/types.h>
+#include <lanelets_to_path/spline_fitter.h>
+#include <lanelets_to_path/types.h>
 
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;

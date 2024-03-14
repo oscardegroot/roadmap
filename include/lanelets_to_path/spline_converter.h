@@ -1,9 +1,9 @@
 #ifndef SPLINE_CONVERTER_H
 #define SPLINE_CONVERTER_H
 
-#include <roadmap/spline_fitter.h>
-#include <roadmap/configuration.h>
-#include <roadmap/types.h>
+#include <lanelets_to_path/spline_fitter.h>
+#include <lanelets_to_path/configuration.h>
+#include <lanelets_to_path/types.h>
 
 #include <ros_tools/ros_visuals.h>
 
