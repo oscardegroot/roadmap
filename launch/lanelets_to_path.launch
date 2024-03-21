@@ -7,5 +7,6 @@
         <remap from="~/input/vector_map" to="/map/vector_map"/>
         <remap from="~/input/route" to="/planning/mission_planning/route"/>
         <remap from="~/input/odometry" to="/localization/kinematic_state"/>
+        <remap from="~/input/goal" to="/planning/mission_planning/goal"/>
     </node>
 </launch>  

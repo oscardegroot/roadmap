@@ -14,7 +14,7 @@ class LaneletFitter : public SplineFitter
 
 public:
     /** @brief Fit splines on just this path with its boundaries */
-    LaneletFitter(RoadmapConfig *config, PathWithLaneId &path_with_lane_id);
+    LaneletFitter(RoadmapConfig *config, PathWithLaneId &path_with_lane_id, const Eigen::Vector2d& goal);
 
 public:
     void Visualize();

@@ -40,6 +40,7 @@ public:
     void onOdometry(Odometry::ConstSharedPtr msg);
     void onMap(HADMapBin::ConstSharedPtr msg);
     void onRoute(LaneletRoute::ConstSharedPtr msg);
+    void onGoal(geometry_msgs::msg::PoseStamped::ConstSharedPtr msg);
 
     void WaypointCallback(const nav_msgs::msg::Path &msg);
 
@@ -47,6 +48,8 @@ private:
     void AddRoadBoundaries(PathWithLaneId &path, const std::vector<lanelet::ConstLanelet> &lanelet_sequence);
 
     std::shared_ptr<RoadmapConfig> config_ptr_;
+
+    Eigen::Vector2d goal_;
 
     rclcpp::Subscription<HADMapBin>::SharedPtr vector_map_subscriber_; /** Subscriber for external waypoints */
     HADMapBin::ConstSharedPtr map_ptr_{nullptr};
@@ -56,6 +59,8 @@ private:
 
     rclcpp::Subscription<Odometry>::SharedPtr odometry_subscriber_; /** Subscriber for external waypoints */
     Odometry::ConstSharedPtr odometry_ptr_{nullptr};
+
+    rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr goal_pose_subscriber_; /** Subscriber for external waypoints */
 
     rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr initial_pose_subscriber_; /** Subscriber for external waypoints */
 

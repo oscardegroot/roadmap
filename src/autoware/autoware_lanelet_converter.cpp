@@ -61,6 +61,11 @@ void AutowareLaneletConverter::initialize()
       std::bind(&AutowareLaneletConverter::onInitialPose, this, _1),
       createSubscriptionOptions(this));
 
+  goal_pose_subscriber_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
+      "~/input/goal", 1,
+      std::bind(&AutowareLaneletConverter::onGoal, this, _1),
+      createSubscriptionOptions(this));
+
   autoware_path_publisher_ = this->create_publisher<PathWithLaneId>(
       "/roadmap/path_with_lane_id", 1);
 
@@ -78,6 +83,11 @@ void AutowareLaneletConverter::onInitialPose(PoseWithCovarianceStamped::ConstSha
     LOG_INFO("Vehicle respawned, recomputing the route.");
     onRoute(route_ptr_); // Computing a new part of the map
   }
+}
+
+void AutowareLaneletConverter::onGoal(geometry_msgs::msg::PoseStamped::ConstSharedPtr msg)
+{
+  goal_ = Eigen::Vector2d(msg->pose.position.x, msg->pose.position.y);
 }
 
 void AutowareLaneletConverter::onOdometry(Odometry::ConstSharedPtr msg)
@@ -175,7 +185,7 @@ void AutowareLaneletConverter::onRoute(LaneletRoute::ConstSharedPtr msg)
   AddRoadBoundaries(reference_path, extended_current_lanes);
   // reference_path.left_bound = extended_reference_path.left_bound;
   // reference_path.right_bound = extended_reference_path.right_bound;
-  LaneletFitter lanelet_fitter(config_ptr_.get(), reference_path);
+  LaneletFitter lanelet_fitter(config_ptr_.get(), reference_path, goal_);
   lanelet_fitter.Visualize();
 
   autoware_path_publisher_->publish(reference_path);

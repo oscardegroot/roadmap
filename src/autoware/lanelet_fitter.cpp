@@ -2,7 +2,7 @@
 
 #include <ros_tools/visuals.h>
 
-LaneletFitter::LaneletFitter(RoadmapConfig *config, PathWithLaneId &path_with_lane_id)
+LaneletFitter::LaneletFitter(RoadmapConfig *config, PathWithLaneId &path_with_lane_id, const Eigen::Vector2d &goal)
 {
     // Bounds are in std::vector<geometry_msgs::Point> format
     // Centerline is in (Autoware) Path format
@@ -12,8 +12,27 @@ LaneletFitter::LaneletFitter(RoadmapConfig *config, PathWithLaneId &path_with_la
 
     // Centerline
     // std::vector<Waypoint> center_lane_points;
+
+    double min_dist = 1e9;
+    int closest_index = -1;
+
     for (auto &point : path_with_lane_id.points)
+    {
         input_center_lane_.emplace_back(point.point.pose.position.x, point.point.pose.position.y, 0.);
+
+        double dist_to_goal =
+            RosTools::distance(Eigen::Vector2d(point.point.pose.position.x, point.point.pose.position.y), goal);
+        if (dist_to_goal < min_dist)
+        {
+            min_dist = dist_to_goal;
+            closest_index = input_center_lane_.size() - 1;
+        }
+    }
+
+    // Stop the reference path at the goal
+    input_center_lane_.erase(input_center_lane_.begin() + closest_index + 1, input_center_lane_.end());
+    input_center_lane_.emplace_back(goal(0), goal(1), 0.);
+
     FitSplineOnWaypoints(input_center_lane_, output_center_lane_, center_lane);
 
     path_with_lane_id.points.clear();
