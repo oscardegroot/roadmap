@@ -1,12 +1,18 @@
 #ifndef __SPLINE_FITTER_H__
 #define __SPLINE_FITTER_H__
 
-#include <rclcpp/rclcpp.hpp>
+#include <vector>
 
-#include <lanelets_to_path/types.h>
-#include <lanelets_to_path/configuration.h>
+namespace RosTools
+{
+    class ROSMarkerPublisher;
+}
 
-#include <ros_tools/ros_visuals.h>
+class RoadmapConfig;
+
+struct Lane;
+struct Waypoint;
+struct Line;
 
 /** @brief Base class for fitting splines */
 class SplineFitter
@@ -22,7 +28,9 @@ public:
     void FitSplineOnLane(Lane &lane);
 
 protected:
-    void FitSplineOnWaypoints(const std::vector<Waypoint> &waypoints, std::vector<Waypoint> &waypoints_out, Lane &lane);
+    void FitSplineOnWaypoints(const std::vector<Waypoint> &waypoints,
+                              std::vector<Waypoint> &waypoints_out,
+                              Lane &lane, bool fit_clothoid = false);
 
     /**
      * @brief Convert a set of input waypoints to the format for fitting the cubic spline
@@ -72,7 +80,6 @@ protected:
     void RemoveCloseTogetherPoints(std::vector<Waypoint> &points) const;
 
 protected:
-    rclcpp::Logger logger_;
     RoadmapConfig *config_;
 };
 

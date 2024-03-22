@@ -14,7 +14,7 @@ class LaneletFitter : public SplineFitter
 
 public:
     /** @brief Fit splines on just this path with its boundaries */
-    LaneletFitter(RoadmapConfig *config, PathWithLaneId &path_with_lane_id, const Eigen::Vector2d& goal);
+    LaneletFitter(RoadmapConfig *config, PathWithLaneId &path_with_lane_id, const Eigen::Vector2d &goal);
 
 public:
     void Visualize();
@@ -24,6 +24,9 @@ private:
 
     std::vector<Waypoint> output_center_lane_, output_right_boundary_, output_left_boundary_;
     std::vector<Waypoint> input_center_lane_, input_right_boundary_, input_left_boundary_;
+
+    void ReadBoundary(const std::vector<geometry_msgs::msg::Point> &bound,
+                      std::vector<Waypoint> &output);
 };
 
 #endif

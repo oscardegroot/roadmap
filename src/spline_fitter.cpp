@@ -1,9 +1,15 @@
 #include <lanelets_to_path/spline_fitter.h>
+
+#include <lanelets_to_path/configuration.h>
+#include <lanelets_to_path/types.h>
+
 #include <spline/Clothoid.h>
 
 #include <ros_tools/logging.h>
+#include <ros_tools/visuals.h>
+#include <ros_tools/math.h>
 
-SplineFitter::SplineFitter() : logger_(rclcpp::get_logger("roadmap.spline_fitter"))
+SplineFitter::SplineFitter()
 {
 }
 
@@ -37,11 +43,13 @@ void SplineFitter::FitSplineOnLane(Lane &lane)
         lane.nodes.push_back(RoadNode(waypoint.x, waypoint.y, waypoint.theta));
 }
 
-void SplineFitter::FitSplineOnWaypoints(const std::vector<Waypoint> &waypoints, std::vector<Waypoint> &waypoints_out, Lane &lane)
+void SplineFitter::FitSplineOnWaypoints(const std::vector<Waypoint> &waypoints,
+                                        std::vector<Waypoint> &waypoints_out,
+                                        Lane &lane, bool fit_clothoid)
 {
     // First we obtain a set of waypoints (either directly or by fitting a clothoid)
     std::vector<double> x, y, s;
-    if (config_->fit_clothoid_)
+    if (fit_clothoid)
         FitClothoid(waypoints, x, y, s);
     else
         ConvertWaypointsToVectors(waypoints, x, y, s);
@@ -57,9 +65,13 @@ void SplineFitter::FitSplineOnWaypoints(const std::vector<Waypoint> &waypoints, 
     FitCubicSpline(lane, waypoints_out);
 }
 
-void SplineFitter::FitClothoid(const std::vector<Waypoint> &waypoints, std::vector<double> &x, std::vector<double> &y, std::vector<double> &s)
+void SplineFitter::FitClothoid(const std::vector<Waypoint> &waypoints,
+                               std::vector<double> &x, std::vector<double> &y, std::vector<double> &s)
 {
     LOG_INFO("Generating path with clothoid interpolation...");
+
+    // auto &publisher = VISUALS.getPublisher("clothoid");
+    // auto &point = publisher.getNewPointMarker("CUBE");
 
     double length = 0;
     double k, dk, L;
@@ -110,6 +122,12 @@ void SplineFitter::FitClothoid(const std::vector<Waypoint> &waypoints, std::vect
         }
         last_s = s.back();
     }
+
+    // for (size_t i = 0; i < x.size(); i++)
+    // {
+    //     point.addPointMarker(Eigen::Vector2d(x[i], y[i]));
+    // }
+    // publisher.publish();
 }
 
 void SplineFitter::ConvertWaypointsToVectors(const std::vector<Waypoint> &waypoints, std::vector<double> &x, std::vector<double> &y, std::vector<double> &s)

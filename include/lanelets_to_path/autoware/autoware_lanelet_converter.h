@@ -3,19 +3,17 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
+#include <autoware_planning_msgs/msg/lanelet_route.hpp>
 #include <autoware_auto_planning_msgs/msg/path.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <nav_msgs/msg/path.hpp>
 
-#include <route_handler/route_handler.hpp>
-#include <lanelet2_extension/utility/query.hpp>              // See route-handler
-#include <lanelet2_extension/utility/message_conversion.hpp> // See route-handler
-
-#include <lanelets_to_path/autoware/lanelet_fitter.h>
-
+#include <Eigen/Dense>
 #include <memory>
 
 using autoware_auto_mapping_msgs::msg::HADMapBin;
@@ -24,9 +22,20 @@ using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using autoware_planning_msgs::msg::LaneletRoute;
 using geometry_msgs::msg::PoseWithCovarianceStamped;
 using nav_msgs::msg::Odometry;
-using route_handler::RouteHandler;
 
 using std::placeholders::_1;
+
+namespace lanelet
+{
+    class ConstLanelet;
+
+}
+namespace route_handler
+{
+    class RouteHandler;
+}
+
+class RoadmapConfig;
 
 /** @brief The lanelet converter is an autoware interface that loads the reference path from
  * the map and the mission planner's route */
@@ -67,6 +76,6 @@ private:
     rclcpp::Publisher<PathWithLaneId>::SharedPtr autoware_path_publisher_;
     rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr reference_pub_;
 
-    std::shared_ptr<RouteHandler> route_handler_{std::make_shared<RouteHandler>()};
+    std::shared_ptr<route_handler::RouteHandler> route_handler_;
 };
 #endif

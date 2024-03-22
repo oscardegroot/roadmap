@@ -27,7 +27,7 @@ include_directories(
   include
 )
 
-add_library(splines
+add_library(splines SHARED
   src/spline/spline.cpp
   src/spline/Clothoid.cpp
 )
@@ -36,14 +36,12 @@ target_include_directories(splines PUBLIC
     "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 
-add_library(${PROJECT_NAME}
-   src/configuration.cpp
-   src/spline_converter.cpp
-   src/spline/spline.cpp
-   src/spline/Clothoid.cpp
-   src/spline_fitter.cpp
-   src/autoware/autoware_lanelet_converter.cpp
-   src/autoware/lanelet_fitter.cpp
+add_library(${PROJECT_NAME} SHARED
+  src/types.cpp
+  src/configuration.cpp
+  src/spline_fitter.cpp
+  src/autoware/autoware_lanelet_converter.cpp
+  src/autoware/lanelet_fitter.cpp
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"

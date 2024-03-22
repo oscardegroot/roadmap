@@ -1,11 +1,19 @@
 #include <lanelets_to_path/autoware/autoware_lanelet_converter.h>
 
+#include <route_handler/route_handler.hpp>
+
+#include <lanelet2_extension/utility/query.hpp>              // See route-handler
+#include <lanelet2_extension/utility/message_conversion.hpp> // See route-handler
+
+#include <lanelets_to_path/autoware/lanelet_fitter.h>
 #include <lanelets_to_path/autoware/autoware_utils.h>
 #include <lanelets_to_path/spline_fitter.h>
+#include <lanelets_to_path/configuration.h>
 #include <lanelets_to_path/types.h>
 
 #include <ros_tools/logging.h>
 #include <ros_tools/visuals.h>
+#include <ros_tools/convertions.h>
 
 namespace
 {
@@ -24,6 +32,7 @@ namespace
 AutowareLaneletConverter::AutowareLaneletConverter()
     : rclcpp::Node("lanelets_to_path")
 {
+  route_handler_ = std::make_shared<route_handler::RouteHandler>();
 }
 
 void AutowareLaneletConverter::initialize()
