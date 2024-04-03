@@ -63,7 +63,7 @@ std::vector<T> linspace(T a, T b, size_t N)
     for (x = xs.begin(), val = a; x != xs.end(); ++x, val += h)
         *x = val;
     return xs;
-};
+}
 
 //! Clothoid computations routine
 namespace Clothoid

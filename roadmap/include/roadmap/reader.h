@@ -1,7 +1,7 @@
 #ifndef __READER_H__
 #define __READER_H__
 
-#include <rapidxml_utils.hpp>
+#include <asr_rapidxml/rapidxml_utils.hpp>
 
 #include <roadmap/types.h>
 #include <roadmap/configuration.h>

@@ -62,6 +62,7 @@ void Roadmap::OffsetCallback(const geometry_msgs::PoseWithCovarianceStamped &msg
 
 void Roadmap::ReverseCallback(const std_msgs::Empty &msg)
 {
+    (void)msg;
 
     is_reversed_ = !is_reversed_;
 
@@ -93,6 +94,7 @@ void Roadmap::ReverseCallback(const std_msgs::Empty &msg)
 
 void Roadmap::ResetCallback(const std_msgs::Empty &msg)
 {
+    (void)msg;
     /* // Initialize the configuration
      config_.reset(new RoadmapConfig());
      config_->initialize();
@@ -119,6 +121,7 @@ void Roadmap::ConvertMap()
 
 void Roadmap::Poll(const ros::TimerEvent &event)
 {
+    (void)event;
     ROADMAP_INFO("====== START LOOP ======");
 
     runs_++;

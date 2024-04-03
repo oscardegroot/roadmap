@@ -38,8 +38,6 @@ void Reader::Read(const std::string &file_name)
 
 void Reader::Read(const std::string &&file_name)
 {
-    LOG_HOOK();
-
     std::string map_file = getPackagePath(config_->map_package_name_) + "/" + file_name;
     LOG_VALUE("map file", map_file);
     Read(map_file);
@@ -91,6 +89,7 @@ void Reader::ReadXML(const std::string &file)
 
 void Reader::ReadYAML(const std::string &file)
 {
+    (void)file;
     LOG_HOOK();
     // // std::cout << std::string("rosparam load ") + file << std::endl;
     // if (system(std::string("rosparam load " + file).c_str()))

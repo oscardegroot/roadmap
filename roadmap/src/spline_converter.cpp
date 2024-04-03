@@ -4,9 +4,7 @@
 
 void SplineConverter::Initialize(ros::NodeHandle &nh, RoadmapConfig *config)
 {
-    // input_map_markers_.reset(new RosTools::ROSMarkerPublisher(nh, "roadmap/input_map", "map", 500));
-    // output_map_markers_.reset(new RosTools::ROSMarkerPublisher(nh, "roadmap/output_map", "map", 2000));
-    // arrow_markers_.reset(new RosTools::ROSMarkerPublisher(nh, "roadmap/output_map_arrows", "map", 2000));
+    (void)nh;
 
     config_ = config;
 
@@ -336,7 +334,7 @@ void SplineConverter::ConvertWaypointsToVectors(const std::vector<Waypoint> &way
         length += L;
 
         // If the distance is sufficiently large, add the waypoint
-        if (added_length > config_->minimum_waypoint_distance_)
+        if (added_length > config_->minimum_waypoint_distance_ || i == waypoints.size() - 1)
         {
             added_length = 0.;
             x.push_back(waypoints[i].x);
@@ -380,15 +378,19 @@ void SplineConverter::FitCubicSpline(Lane &lane, std::vector<Waypoint> &waypoint
     }
 
     // Check if we are not at our destination yet
-    double error = std::sqrt(std::pow(waypoints_out.back().x - lane.spline_x.m_y_.back(), 2) + std::pow(waypoints_out.back().y - lane.spline_y.m_y_.back(), 2));
-    if (error > 0.01)
-    {
-        // Add a final waypoint
-        waypoints_out.emplace_back(
-            lane.spline_x.m_x_.back(),
-            lane.spline_y.m_y_.back(),
-            waypoints_out.back().theta);
-    }
+    /** @note: Bugged */
+    // double error = std::sqrt(std::pow(waypoints_out.back().x - lane.spline_x.m_y_.back(), 2) + std::pow(waypoints_out.back().y - lane.spline_y.m_y_.back(), 2));
+    // if (error > 0.01)
+    // {
+    //     // Add a final waypoint
+    //     LOG_VALUE("x", lane.spline_x.m_x_.back());
+    //     LOG_VALUE("y", lane.spline_y.m_y_.back());
+    //     LOG_VALUE("theta", waypoints_out.back().theta);
+    //     waypoints_out.emplace_back(
+    //         lane.spline_x.m_x_.back(),
+    //         lane.spline_y.m_y_.back(),
+    //         waypoints_out.back().theta);
+    // }
 
     ROADMAP_INFO("Cubic Spline Fitted");
 }

@@ -10,9 +10,9 @@ roadmap:
 
   # === Spline settings === #
   spline:
-    fit_clothoid: true             # Fits a clothoid before fitting cubic splines if TRUE
-    minimum_waypoint_distance: 2.0  # Ignore waypoints closer than this distance together
-    spline_sample_distance: 5.0       # Distance between sampled waypoints on the spline
+    fit_clothoid: false             # Fits a clothoid before fitting cubic splines if TRUE
+    minimum_waypoint_distance: 0.5  # Ignore waypoints closer than this distance together
+    spline_sample_distance: 2.0 #1.0 #5.0       # Distance between sampled waypoints on the spline
     clothoid_point_per_xm: 0.25        # Distance forced between points on the Clothoid
 
   # === Visual settings === #
