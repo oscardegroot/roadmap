@@ -3,13 +3,11 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <ros_tools/base_configuration.h>
-
 #include <string>
 #include <vector>
 #include "helpers.h"
 
-class RoadmapConfig : public RosTools::BaseConfiguration
+class RoadmapConfig
 {
 
   /**
@@ -20,6 +18,7 @@ class RoadmapConfig : public RosTools::BaseConfiguration
 public:
   RoadmapConfig();
   ~RoadmapConfig();
+  bool declared_ = false;
 
   /**
    * @brief intialize:  check parameters on parameter server and read from there
@@ -54,6 +53,63 @@ public:
   double autoware_update_interval_;
   double autoware_forward_distance_, autoware_backward_distance_;
   bool autoware_include_other_lane_;
+
+  /* Retrieve paramater, if it doesn't exist return false */
+  template <class T>
+  bool retrieveParameter(rclcpp::Node::SharedPtr node, const std::string &name, T &value)
+  {
+    if (!declared_)
+      node->declare_parameter<T>(name);
+
+    return node->get_parameter(name, value);
+  }
+
+  template <class T>
+  bool retrieveParameter(rclcpp::Node *node, const std::string &name, T &value)
+  {
+    if (!declared_)
+      node->declare_parameter<T>(name);
+
+    return node->get_parameter(name, value);
+  }
+
+  /* Retrieve parameter, if it doesn't exist use the default */
+  template <class T>
+  void retrieveParameter(rclcpp::Node::SharedPtr node, const std::string &name, T &value, const T &default_value)
+  {
+    if (!declared_)
+      node->declare_parameter<T>(name, default_value);
+
+    node->get_parameter(name, value);
+  }
+
+  /* Retrieve parameter, if it doesn't exist use the default */
+  template <class T>
+  void retrieveParameter(rclcpp::Node *node, const std::string &name, T &value, const T &default_value)
+  {
+    if (!declared_)
+      node->declare_parameter<T>(name, default_value);
+
+    node->get_parameter(name, value);
+  }
+
+  template <class L>
+  void retrieveParameter(rclcpp::Node::SharedPtr node, const std::string &name, std::vector<L> &value, const std::vector<L> &default_value)
+  {
+    if (!declared_)
+      node->declare_parameter<std::vector<L>>(name, default_value);
+
+    node->get_parameter(name, value);
+  }
+
+  template <class L>
+  void retrieveParameter(rclcpp::Node *node, const std::string &name, std::vector<L> &value, const std::vector<L> &default_value)
+  {
+    if (!declared_)
+      node->declare_parameter<std::vector<L>>(name, default_value);
+
+    node->get_parameter(name, value);
+  }
 };
 
 #endif

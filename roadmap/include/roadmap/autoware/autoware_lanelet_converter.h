@@ -1,6 +1,7 @@
 #ifndef __AUTOWARE_LANELET_CONVERTER_INTERFACE_H__
 #define __AUTOWARE_LANELET_CONVERTER_INTERFACE_H__
 
+#include <rclcpp/rclcpp.hpp>
 #include <autoware_auto_planning_msgs/msg/path.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 
@@ -14,7 +15,7 @@
 #include <roadmap/roadmap.h>
 #include <roadmap/autoware/lanelet_fitter.h>
 
-#include <ros_tools/ros_visuals.h>
+#include <ros_tools/visuals.h>
 
 #include <memory>
 
@@ -28,14 +29,12 @@ using route_handler::RouteHandler;
 
 using std::placeholders::_1;
 
-
-
 /** @brief The lanelet converter is an autoware interface that loads the reference path from
  * the map and the mission planner's route */
-class AutowareLaneletConverter
+class AutowareLaneletConverter : public rclcpp::Node
 {
 public:
-    AutowareLaneletConverter(std::shared_ptr<Roadmap> roadmap);
+    AutowareLaneletConverter();
 
     // Trigger a map recompute when respawning
     void onInitialPose(PoseWithCovarianceStamped::ConstSharedPtr msg);
@@ -46,7 +45,6 @@ public:
 private:
     void AddRoadBoundaries(PathWithLaneId &path, const std::vector<lanelet::ConstLanelet> &lanelet_sequence);
 
-    std::shared_ptr<Roadmap> roadmap_ptr_;
     std::shared_ptr<RoadmapConfig> config_ptr_;
     rclcpp::Logger logger_;
 

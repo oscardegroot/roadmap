@@ -279,13 +279,13 @@ Waypoint SplineFitter::FindPointClosestToSplineOrthogonal(const Lane &center_lan
     if (proposal_s.size() > 1)
     {
         // Find the closest intersection
-        double distance = RosTools::dist(boundary.at(result_s), waypoint.asVector2d());
+        double distance = RosTools::distance(boundary.at(result_s), waypoint.asVector2d());
         for (size_t i = 1; i < proposal_s.size(); i++)
         {
             double cur_s = proposal_s[i];
 
             // Distance from the initial centerline point
-            double new_dist = RosTools::dist(boundary.at(cur_s), waypoint.asVector2d());
+            double new_dist = RosTools::distance(boundary.at(cur_s), waypoint.asVector2d());
             if (new_dist < distance)
             {
                 distance = new_dist;

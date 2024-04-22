@@ -5,6 +5,7 @@
 #include <roadmap/types.h>
 #include <roadmap/spline_converter.h>
 
+#include <std_msgs/msg/empty.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <roadmap_msgs/msg/road_polyline_array.hpp>
 
@@ -37,7 +38,7 @@ public:
 
     void ReverseCallback(const std_msgs::msg::Empty &msg);
 
-    std::shared_ptr<RoadmapConfig> GetConfig() const {return config_;}
+    std::shared_ptr<RoadmapConfig> GetConfig() const { return config_; }
 
 private:
     std::shared_ptr<RoadmapConfig> config_; /** Parameters */

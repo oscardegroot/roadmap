@@ -1,16 +1,18 @@
 #include <roadmap/reader.h>
 
-#include <ros_tools/ros2_wrappers.h>
+#include <ros_tools/paths.h>
+#include <ros_tools/convertions.h>
+#include <ros_tools/math.h>
 
 void Reader::Read(rclcpp::Node::SharedPtr node)
 {
-    std::string map_file = RosTools::GetSharedPath(config_->map_package_name_) + config_->map_file_name_;
+    std::string map_file = getPackagePath(config_->map_package_name_) + config_->map_file_name_;
     Read(node, map_file);
 }
 
 void Reader::Read(rclcpp::Node::SharedPtr node, const std::string &&file_name)
 {
-    std::string map_file = RosTools::GetSharedPath(config_->map_package_name_) + file_name;
+    std::string map_file = getPackagePath(config_->map_package_name_) + file_name;
     Read(node, map_file);
 }
 void Reader::Read(rclcpp::Node::SharedPtr node, const std::string &file_name)
@@ -24,7 +26,7 @@ void Reader::Read(rclcpp::Node::SharedPtr node, const std::string &file_name)
     // If the path does not contain the package, add it
     std::string map_file;
     if (file_name.find("//" + config_->map_package_name_ + "//") != std::string::npos)
-        map_file = RosTools::GetSharedPath(config_->map_package_name_) + file_name;
+        map_file = getPackagePath(config_->map_package_name_) + file_name;
     else
         map_file = file_name;
 

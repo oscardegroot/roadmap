@@ -1,6 +1,7 @@
 #ifndef __TYPES_H__
 #define __TYPES_H__
 
+#include <rclcpp/rclcpp.hpp>
 #include <roadmap_msgs/msg/road_polyline_array.hpp>
 #include <roadmap_msgs/msg/road_polyline.hpp>
 
@@ -9,7 +10,8 @@
 #include <geometry_msgs/msg/pose.hpp>
 
 #include <spline/spline.h>
-#include "ros_tools/helpers.h"
+#include <ros_tools/math.h>
+#include <ros_tools/convertions.h>
 
 // Radius of Earth
 #define GLOBE_RADIUS 6371.0e3
@@ -163,7 +165,7 @@ struct Lane
 
     double distanceTo(const double s, const Waypoint &point) const
     {
-        return RosTools::dist(at(s), Eigen::Vector2d(point.x, point.y));
+        return RosTools::distance(at(s), Eigen::Vector2d(point.x, point.y));
     }
 
     double distanceToLine(const double s, const Line &line) const
